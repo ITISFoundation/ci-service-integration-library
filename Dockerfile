@@ -10,6 +10,7 @@ ARG COMMIT_SHA="a2413944443f03074866d23172b32249140bd288"
 ARG CLONE_DIR="/opsarc"
 ARG PYTHON_VERSION="3.8.10"
 ARG DEBIAN_FRONTEND=noninteractive
+ARG DOCKER_COMPOSE_VERSION="1.29.2"
 
 #Set of all dependencies needed for pyenv to work on Ubuntu
 RUN apt-get update && \ 
@@ -53,7 +54,7 @@ RUN git clone -n ${REPO_NAME} ${CLONE_DIR} && \
     git checkout -b ${BRANCH_NAME} ${COMMIT_SHA} && \
     # install ooil and requirements
     cd ${CLONE_DIR}/packages/service-integration && \
-    pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir --upgrade pip docker-compose==${DOCKER_COMPOSE_VERSION} && \
     pip install --no-cache-dir -r requirements/prod.txt && \
     pip install --no-cache-dir . && \
     cd / && \
