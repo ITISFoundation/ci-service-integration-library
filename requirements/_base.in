@@ -1,0 +1,5 @@
+envyaml
+pydantic
+click
+httpx
+yarl

@@ -1,5 +1,6 @@
 FROM nvidia/cudagl:10.2-runtime-ubuntu18.04
 
+LABEL maintainer="neagu@itis.swiss"
 LABEL org.opencontainers.image.authors="neagu@itis.swiss"
 LABEL org.opencontainers.image.source="https://github.com/ITISFoundation/ci-service-integration-library"
 LABEL org.opencontainers.image.licenses="MIT"
@@ -11,6 +12,7 @@ ARG CLONE_DIR="/opsarc"
 ARG PYTHON_VERSION="3.8.10"
 ARG DEBIAN_FRONTEND=noninteractive
 ARG DOCKER_COMPOSE_VERSION="1.29.2"
+ARG INSTALL_DIR="/package-install-dir"
 
 #Set of all dependencies needed for pyenv to work on Ubuntu
 RUN apt-get update && \ 
@@ -73,3 +75,11 @@ RUN git clone -n ${REPO_NAME} ${CLONE_DIR} && \
     rm -rf ${CLONE_DIR} && \
     # check it is working
     ooil --version
+
+# Install this repo's tooling for managing and pushing images
+COPY ./ ${INSTALL_DIR}
+RUN cd ${INSTALL_DIR} && \
+    pip install . && \
+    cd / && \
+    rm -rf ${INSTALL_DIR} && \
+    dpos --version
