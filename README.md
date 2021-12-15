@@ -31,14 +31,4 @@ Used to monitor osparc services managed by ooil.
 When a monitored github repository has a passing CI it will:
 - build a new image
 - test it and
-- push it to registry.speag.com
-
-
-TODO:
-- [x] base configuration file manged via Pydantic
-
-- [x] add CI checks before building
-    - [x] gitlab
-    - [x] github
-- [x] split dependencies and add separate folder
-- [x] use a package to install dependencies
+- push it to a deployment registry
