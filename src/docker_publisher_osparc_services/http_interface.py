@@ -7,7 +7,6 @@ from yarl import URL
 from .models import RegistryEndpointyModel, RepoModel
 from .exceptions import (
     CouldNotFindAGitlabRepositoryRepoException,
-    GitlabPipelineNotFound,
 )
 
 
@@ -75,12 +74,15 @@ async def gitlab_did_last_repo_run_pass(
                 "PRIVATE-TOKEN": repo_model.gitlab.personal_access_token.get_secret_value()
             },
         )
-        results = result.json()
-        if len(results) != 1:
-            message = f"Searching commit={branch_hash} did not yield the deisired reulst {results}"
-            raise GitlabPipelineNotFound(message)
-        run = result.json()[0]
-        return run["status"] == "success"
+        found_pipelines = result.json()
+
+        # scan for the biggest pipeline id (most recent run)
+        index_pipeline_id = [(k, x["id"]) for k, x in enumerate(found_pipelines)]
+        max_pipeline_id_index_tuple = max(index_pipeline_id, key=lambda item: item[1])
+        found_pipelines_index = max_pipeline_id_index_tuple[0]
+
+        latest_run = found_pipelines[found_pipelines_index]
+        return latest_run["status"] == "success"
 
 
 async def _registry_request(

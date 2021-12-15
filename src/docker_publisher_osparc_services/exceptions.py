@@ -14,9 +14,5 @@ class CouldNotFindAGitlabRepositoryRepoException(BaseAppException):
     """not found the searched repository"""
 
 
-class GitlabPipelineNotFound(BaseAppException):
-    """pipeline not found"""
-
-
 class CommandFailedException(BaseAppException):
     """raised if a command fails"""
