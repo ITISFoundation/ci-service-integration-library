@@ -80,8 +80,6 @@ class ConfigModel(BaseModel):
     @root_validator()
     @classmethod
     def check_registry_target_defined(cls, values: Dict) -> Dict:
-        print(values)
-
         registries: Dict[str, RegistryEndpointyModel] = values["registries"]
         repositories: List[RepoModel] = values["repositories"]
         for repo in repositories:

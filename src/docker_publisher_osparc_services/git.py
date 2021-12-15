@@ -7,7 +7,6 @@ from .utils import command_output
 
 
 async def get_branch_hash(repo_model: RepoModel) -> str:
-    print(await command_output("env"))
     result = await command_output(
         f"git ls-remote {repo_model.repo} refs/heads/{repo_model.branch} -q",
     )
