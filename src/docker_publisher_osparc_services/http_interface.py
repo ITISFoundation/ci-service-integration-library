@@ -4,10 +4,8 @@ from typing import Any, AsyncIterator, Dict, Optional, Set
 from httpx import AsyncClient, codes
 from yarl import URL
 
+from .exceptions import CouldNotFindAGitlabRepositoryRepoException
 from .models import RegistryEndpointyModel, RepoModel
-from .exceptions import (
-    CouldNotFindAGitlabRepositoryRepoException,
-)
 
 
 @asynccontextmanager

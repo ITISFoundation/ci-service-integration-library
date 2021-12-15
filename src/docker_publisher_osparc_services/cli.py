@@ -4,16 +4,17 @@ from pathlib import Path
 import click
 
 from . import __version__
-from .commands import (
+from .http_interface import get_tags_for_repo
+from .models import ConfigModel
+from .operations import (
     assemble_compose,
     build_images,
+    clone_repo,
+    did_ci_pass,
     fetch_images_from_compose_spec,
+    get_branch_hash,
     tag_and_push_image,
 )
-from .models import ConfigModel
-from .git import clone_repo, get_branch_hash
-from .http_interface import get_tags_for_repo
-from .repo_server import did_ci_pass
 
 
 async def run_command(config: Path) -> None:
@@ -21,6 +22,7 @@ async def run_command(config: Path) -> None:
     print(cfg)
 
     # TODO: start in parallel??
+    # yes to avoid issues with failing missconfigured repositories
     for repo_model in cfg.repositories:
         branch_hash = await get_branch_hash(repo_model)
         target = f"'{repo_model.repo}@{repo_model.branch}#{branch_hash}'"
@@ -55,12 +57,16 @@ async def run_command(config: Path) -> None:
             print(f"Built image '{image}' checking tags for '{remote_name}' {tags}")
 
             if tag not in tags:
-                print(f"Will build image {image}")
+                # write pipeline configuration here in the folder or append it as a result of this job
+                # just have some scripts to be generated with commands or something!
+                # how do I determine if there is a test stage?
+                print(f"Will Assemble pipeline for {image}")
                 # TODO: launch this as CI JOB
                 await build_images(repo_model)
+                # to build we git-clone, ooil-compose, docker-compose-build, push-for-next-stage
                 await tag_and_push_image(image=image, remote_name=remote_name, tag=tag)
             else:
-                print(f"Image already present, skipping build for {image}")
+                print(f"Image already present, skipping pipeline for {image}")
 
 
 @click.command()

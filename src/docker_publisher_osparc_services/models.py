@@ -50,6 +50,14 @@ class RepoModel(BaseModel):
     clone_path: Optional[Path] = Field(
         None, description="Used internally to specify directory where to clone"
     )
+    ci_stage_test_script: Optional[List[str]] = Field(
+        None,
+        description=(
+            "if present it will enable the test stage and will execute the commands"
+            "in sequence after cloning the repo and changing the directory to the"
+            "clone location"
+        ),
+    )
 
     @root_validator()
     def require_access_token_for_gitlab(cls, values):
