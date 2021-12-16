@@ -67,8 +67,7 @@ async def run_command(config: Path) -> None:
                     f"List of remote tags {[t for t in tags]}"
                 )
 
-                # if tag not in tags:
-                if True:
+                if tag not in tags:
                     print(f"Assembling pipeline for image {image}")
                     # write pipeline configuration here in the folder or append it as a result of this job
                     # just have some scripts to be generated with commands or something!
