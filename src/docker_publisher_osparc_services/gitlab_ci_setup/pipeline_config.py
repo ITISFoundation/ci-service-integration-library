@@ -43,8 +43,6 @@ class PipelineGenerator:
 
     async def __aenter__(self):
         self.child_gitlab_config = open(GENERATED_PIPELINE_PATH, "w+")
-
-        self.child_gitlab_config.write(PipelineWriter.parent_job_template())
         return self
 
     async def __aexit__(
@@ -56,20 +54,24 @@ class PipelineGenerator:
         if not self.child_gitlab_config:
             return None
 
-        for pipeline_config, env_vars in self._pipeline_info:
-            pipeline_writer = PipelineWriter(pipeline_config, env_vars)
+        if len(self._pipeline_info) == 0:
+            # write empty pipeline with a job that says ok
+            self.child_gitlab_config.write(PipelineWriter.nothing_to_do_pipeline())
+        else:
+            self.child_gitlab_config.write(PipelineWriter.parent_job_template())
+            for pipeline_config, env_vars in self._pipeline_info:
+                pipeline_writer = PipelineWriter(pipeline_config, env_vars)
 
-            assert self.child_gitlab_config
+                assert self.child_gitlab_config
 
-            self.child_gitlab_config.write(pipeline_writer.build_stage())
+                self.child_gitlab_config.write(pipeline_writer.build_stage())
 
-            if pipeline_config.test is not None:
-                self.child_gitlab_config.write(pipeline_writer.test_stage())
+                if pipeline_config.test is not None:
+                    self.child_gitlab_config.write(pipeline_writer.test_stage())
 
-            self.child_gitlab_config.write(pipeline_writer.push_stage())
+                self.child_gitlab_config.write(pipeline_writer.push_stage())
 
         self.child_gitlab_config.close()
-
         print(HEADER)
         print("GENERATED PIPELINE")
         print(HEADER)

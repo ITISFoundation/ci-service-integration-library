@@ -40,6 +40,25 @@ class PipelineWriter:
         return "\n".join([""] + [f"{TAB_SPACE}- {command}" for command in commands])
 
     @staticmethod
+    def nothing_to_do_pipeline() -> str:
+        """Used when no checks are requured"""
+        return _format_template(
+            """
+            stages:
+                - info
+
+            no-further-action-required:
+                image: $CI_SERVICE_INTEGRATION_LIBRARY
+                tags:
+                stage: info
+                tags:
+                    - DOCKER_Xmodern
+                script:
+                    - echo "Nothing required updates. No builds scheduled."
+            """
+        )
+
+    @staticmethod
     def parent_job_template() -> str:
         """This is globally shared between all jobs"""
         return _format_template(

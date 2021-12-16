@@ -67,10 +67,10 @@ run-dev: ## starts the script for development
 	docker run -it --rm \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	-v $(PWD)/config.yaml:/tmp/config.yaml \
-	-e REGISTRY_ADDRESS=${REGISTRY_ADDRESS} \
+	-e REGISTRY_SPEAG_COM_ADDRESS=${REGISTRY_SPEAG_COM_ADDRESS} \
+	-e REGISTRY_SPEAG_COM_PASSWORD=${REGISTRY_SPEAG_COM_PASSWORD} \
+	-e REGISTRY_SPEAG_COM_USER=${REGISTRY_SPEAG_COM_USER} \
 	-e GITLAB_TOKEN=${GITLAB_TOKEN} \
-	-e REGISTRY_PASSWORD=${REGISTRY_PASSWORD} \
-	-e REGISTRY_USER=${REGISTRY_USER} \
 	-e GITLAB_USER=${GITLAB_USER} \
 	-e GITLAB_PASSWORD=${GITLAB_PASSWORD} \
 	${IMAGE_NAME} \
@@ -85,10 +85,10 @@ shell:	## Start a shell in the built image
 	docker run -it --rm \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	-v $(PWD)/config.yaml:/tmp/config.yaml \
-	-e REGISTRY_ADDRESS=${REGISTRY_ADDRESS} \
+	-e REGISTRY_SPEAG_COM_ADDRESS=${REGISTRY_SPEAG_COM_ADDRESS} \
+	-e REGISTRY_SPEAG_COM_PASSWORD=${REGISTRY_SPEAG_COM_PASSWORD} \
+	-e REGISTRY_SPEAG_COM_USER=${REGISTRY_SPEAG_COM_USER} \
 	-e GITLAB_TOKEN=${GITLAB_TOKEN} \
-	-e REGISTRY_PASSWORD=${REGISTRY_PASSWORD} \
-	-e REGISTRY_USER=${REGISTRY_USER} \
 	-e GITLAB_USER=${GITLAB_USER} \
 	-e GITLAB_PASSWORD=${GITLAB_PASSWORD} \
 	${IMAGE_NAME} \
