@@ -42,20 +42,6 @@ def fetch_images_from_compose_spec(repo_model: RepoModel) -> List[str]:
     return [service_data["image"] for service_data in parsed_spec["services"].values()]
 
 
-async def build_images(repo_model: RepoModel) -> None:
-    result = await command_output(
-        "docker-compose build", live_output=True, cwd=f"{repo_model.clone_path}"
-    )
-    print(result)
-
-
-async def tag_and_push_image(image: str, remote_name: str, tag: str) -> None:
-    result = await command_output(f"docker tag {image}:{tag} {remote_name}:{tag}")
-    print(result)
-    result = await command_output(f"docker push {remote_name}:{tag}")
-    print(result)
-
-
 async def did_ci_pass(repo_model: RepoModel, branch_hash: str) -> bool:
     if repo_model.host_type == HostType.GITHUB:
         return await github_did_last_repo_run_pass(repo_model, branch_hash)
