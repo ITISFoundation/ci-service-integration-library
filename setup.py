@@ -50,8 +50,6 @@ SETUP = dict(
         "console_scripts": [
             "docker-publisher-osparc-services=docker_publisher_osparc_services.cli:main",
             "dpos=docker_publisher_osparc_services.cli:main",
-            # TODO: add entrypoint for pipeline generation
-            "dpos-child-pipeline=docker_publisher_osparc_services.gitlab_ci.cli:main",
         ],
     },
 )
