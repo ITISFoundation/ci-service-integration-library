@@ -10,6 +10,7 @@ PREFIX = "SCCI"  # short for simcore ci
 CommandList = List[str]
 
 COMMANDS_BUILD: CommandList = [
+    "echo ${SCCI_REGISTRY_PASSWORD} | docker login -u ${SCCI_REGISTRY_USER} --password-stdin ${SCCI_REGISTRY_ADDRESS}",
     "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
     "cd ${SCCI_CLONE_DIR}",
     "ooil compose",
@@ -21,11 +22,13 @@ COMMANDS_BUILD: CommandList = [
 COMMANDS_TEST_BASE: CommandList = [
     "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
     "cd ${SCCI_CLONE_DIR}",
+    "echo ${SCCI_REGISTRY_PASSWORD} | docker login -u ${SCCI_REGISTRY_USER} --password-stdin ${SCCI_REGISTRY_ADDRESS}",
     "docker pull ${SCCI_REMOTE_BUILD_REGISTRY}:${SCCI_TAG}",
     # if user defines extra commands those will be appended here
 ]
 
 COMMANDS_PUSH: CommandList = [
+    "echo ${SCCI_REGISTRY_PASSWORD} | docker login -u ${SCCI_REGISTRY_USER} --password-stdin ${SCCI_REGISTRY_ADDRESS}",
     "docker pull ${SCCI_REMOTE_BUILD_REGISTRY}:${SCCI_TAG}",
     "docker tag ${SCCI_REMOTE_BUILD_REGISTRY}:${SCCI_TAG} ${SCCI_REMOTE_DEPLOY_REGISTRY}:${SCCI_TAG}",
     "docker push ${SCCI_REMOTE_DEPLOY_REGISTRY}:${SCCI_TAG}",
@@ -50,6 +53,9 @@ def assemble_env_vars(
         f"{PREFIX}_CI_IMAGE_REGISTRY": f"ci-test/{image_name}",
         f"{PREFIX}_REMOTE_DEPLOY_REGISTRY": f"{registry_model.address}/{remote_deploy_name}",
         f"{PREFIX}_REMOTE_BUILD_REGISTRY": f"{registry_model.address}/{remote_build_name}",
+        f"{PREFIX}_REGISTRY_PASSWORD": registry_model.password.get_secret_value(),
+        f"{PREFIX}_REGISTRY_USER": registry_model.user,
+        f"{PREFIX}_REGISTRY_ADDRESS": registry_model.address,
     }
 
 
