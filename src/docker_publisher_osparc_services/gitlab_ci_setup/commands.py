@@ -12,6 +12,7 @@ CommandList = List[str]
 COMMANDS_BUILD: CommandList = [
     "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
     "cd ${SCCI_CLONE_DIR}",
+    "ooil compose",
     "docker-compose build",
     "docker tag ${SCCI_IMAGE_NAME}:${SCCI_TAG} ${SCCI_IMAGE_NAME}:${SCCI_TAG}",
     "docker push ${SCCI_IMAGE_NAME}:${SCCI_TAG}",
