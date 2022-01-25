@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Dict, List
 
-from ..models import RepoModel
+from ..models import RegistryEndpointyModel, RepoModel
 
 PREFIX = "SCCI"  # short for simcore ci
 
@@ -33,6 +33,7 @@ COMMANDS_PUSH: CommandList = [
 
 
 def assemble_env_vars(
+    registry_model: RegistryEndpointyModel,
     repo_model: RepoModel,
     image_name: str,
     remote_deploy_name: str,
@@ -40,14 +41,15 @@ def assemble_env_vars(
     tag: str,
 ) -> Dict[str, str]:
     clone_directory: Path = Path(TemporaryDirectory().name)
+
     return {
         f"{PREFIX}_REPO": repo_model.repo,
         f"{PREFIX}_CLONE_DIR": f"{clone_directory}",
         f"{PREFIX}_IMAGE_NAME": image_name,
         f"{PREFIX}_TAG": tag,
         f"{PREFIX}_CI_IMAGE_NAME": f"ci-test/{image_name}",
-        f"{PREFIX}_REMOTE_DEPLOY_NAME": remote_deploy_name,
-        f"{PREFIX}_REMOTE_BUILD_NAME": remote_build_name,
+        f"{PREFIX}_REMOTE_DEPLOY_NAME": f"{registry_model.address}/{remote_deploy_name}",
+        f"{PREFIX}_REMOTE_BUILD_NAME": f"{registry_model.address}/{remote_build_name}",
     }
 
 

@@ -13,7 +13,7 @@ from .gitlab_ci_setup.commands import (
 )
 from .gitlab_ci_setup.pipeline_config import PipelineConfig, PipelineGenerator
 from .http_interface import get_tags_for_repo
-from .models import ConfigModel
+from .models import ConfigModel, RegistryEndpointyModel
 from .operations import (
     assemble_compose,
     clone_repo,
@@ -59,10 +59,13 @@ async def run_command(config: Path) -> None:
                         )
                     )
                 remote_deploy_name = repo_model.registry.local_to_remote[image_name]
-                remote_build_name = repo_model.registry.local_to_remote_build[image_name]
-                tags = await get_tags_for_repo(
-                    cfg.registries[repo_model.registry.target], remote_deploy_name
-                )
+                remote_build_name = repo_model.registry.local_to_remote_build[
+                    image_name
+                ]
+                registry_model: RegistryEndpointyModel = cfg.registries[
+                    repo_model.registry.target
+                ]
+                tags = await get_tags_for_repo(registry_model, remote_deploy_name)
                 print(
                     f"Checking tag '{tag}' for '{image}' was pushed at '{remote_deploy_name}'. "
                     f"List of remote tags {[t for t in tags]}"
@@ -76,7 +79,12 @@ async def run_command(config: Path) -> None:
 
                     # build commands validation
                     env_vars = assemble_env_vars(
-                        repo_model, image_name, remote_deploy_name, remote_build_name, tag
+                        registry_model,
+                        repo_model,
+                        image_name,
+                        remote_deploy_name,
+                        remote_build_name,
+                        tag,
                     )
                     validate_commands_list(COMMANDS_BUILD, env_vars)
 
