@@ -14,26 +14,30 @@ COMMANDS_BUILD: CommandList = [
     "cd ${SCCI_CLONE_DIR}",
     "ooil compose",
     "docker-compose build",
-    "docker tag ${SCCI_IMAGE_NAME}:${SCCI_TAG} ${SCCI_IMAGE_NAME}:${SCCI_TAG}",
-    "docker push ${SCCI_IMAGE_NAME}:${SCCI_TAG}",
+    "docker tag ${SCCI_IMAGE_NAME}:${SCCI_TAG} ${SCCI_REMOTE_BUILD_NAME}:${SCCI_TAG}",
+    "docker push ${SCCI_REMOTE_BUILD_NAME}:${SCCI_TAG}",
 ]
 
 COMMANDS_TEST_BASE: CommandList = [
     "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
     "cd ${SCCI_CLONE_DIR}",
-    "docker pull ${SCCI_IMAGE_NAME}:${SCCI_TAG}",
-    # if user defines extra commands those will be append here
+    "docker pull ${SCCI_REMOTE_BUILD_NAME}:${SCCI_TAG}",
+    # if user defines extra commands those will be appended here
 ]
 
 COMMANDS_PUSH: CommandList = [
-    "docker pull ${SCCI_IMAGE_NAME}:${SCCI_TAG}",
-    "docker tag ${SCCI_IMAGE_NAME}:${SCCI_TAG} ${SCCI_REMOTE_NAME}:${SCCI_TAG}",
-    "docker push ${SCCI_REMOTE_NAME}:${SCCI_TAG}",
+    "docker pull ${SCCI_REMOTE_BUILD_NAME}:${SCCI_TAG}",
+    "docker tag ${SCCI_REMOTE_BUILD_NAME}:${SCCI_TAG} ${SCCI_REMOTE_DEPLOY_NAME}:${SCCI_TAG}",
+    "docker push ${SCCI_REMOTE_DEPLOY_NAME}:${SCCI_TAG}",
 ]
 
 
 def assemble_env_vars(
-    repo_model: RepoModel, image_name: str, remote_name: str, tag: str
+    repo_model: RepoModel,
+    image_name: str,
+    remote_deploy_name: str,
+    remote_build_name: str,
+    tag: str,
 ) -> Dict[str, str]:
     clone_directory: Path = Path(TemporaryDirectory().name)
     return {
@@ -42,7 +46,8 @@ def assemble_env_vars(
         f"{PREFIX}_IMAGE_NAME": image_name,
         f"{PREFIX}_TAG": tag,
         f"{PREFIX}_CI_IMAGE_NAME": f"ci-test/{image_name}",
-        f"{PREFIX}_REMOTE_NAME": remote_name,
+        f"{PREFIX}_REMOTE_DEPLOY_NAME": remote_deploy_name,
+        f"{PREFIX}_REMOTE_BUILD_NAME": remote_build_name,
     }
 
 

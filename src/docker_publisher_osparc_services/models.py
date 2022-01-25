@@ -31,6 +31,17 @@ class RegistryTargetModel(BaseModel):
             "simcore/services/dynamic/jupyter-math": "ci/osparc-sparc-internal/master/jupyter-math"
         },
     )
+    local_to_remote_build: Dict[str, str] = Field(
+        ...,
+        description=(
+            "mapping between locally built image name and remote namespace "
+            "in the registry which can be overwritten. This will be used "
+            "as a temporary build area."
+        ),
+        example={
+            "simcore/services/dynamic/jupyter-math": "ci/builder/osparc-sparc-internal/master/jupyter-math"
+        },
+    )
 
 
 class GitLabModel(BaseModel):

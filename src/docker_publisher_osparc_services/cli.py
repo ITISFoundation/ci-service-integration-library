@@ -58,12 +58,13 @@ async def run_command(config: Path) -> None:
                             f"local_to_remote={repo_model.registry.local_to_remote}"
                         )
                     )
-                remote_name = repo_model.registry.local_to_remote[image_name]
+                remote_deploy_name = repo_model.registry.local_to_remote[image_name]
+                remote_build_name = repo_model.registry.local_to_remote_build[image_name]
                 tags = await get_tags_for_repo(
-                    cfg.registries[repo_model.registry.target], remote_name
+                    cfg.registries[repo_model.registry.target], remote_deploy_name
                 )
                 print(
-                    f"Checking tag '{tag}' for '{image}' was pushed at '{remote_name}'. "
+                    f"Checking tag '{tag}' for '{image}' was pushed at '{remote_deploy_name}'. "
                     f"List of remote tags {[t for t in tags]}"
                 )
 
@@ -75,7 +76,7 @@ async def run_command(config: Path) -> None:
 
                     # build commands validation
                     env_vars = assemble_env_vars(
-                        repo_model, image_name, remote_name, tag
+                        repo_model, image_name, remote_deploy_name, remote_build_name, tag
                     )
                     validate_commands_list(COMMANDS_BUILD, env_vars)
 
