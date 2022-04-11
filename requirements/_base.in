@@ -1,7 +1,6 @@
 click
 envyaml
 httpx
-jq
 pydantic
 yarl
 yq

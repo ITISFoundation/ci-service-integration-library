@@ -29,8 +29,6 @@ idna==3.3
     #   anyio
     #   rfc3986
     #   yarl
-jq==1.2.2
-    # via -r requirements/_base.in
 multidict==6.0.2
     # via yarl
 pydantic==1.9.0

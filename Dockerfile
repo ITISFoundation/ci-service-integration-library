@@ -38,7 +38,8 @@ RUN apt-get update && \
     mecab-ipadic-utf8 \
     gnupg \
     lsb-release \
-    git
+    git \
+    jq
 
 # install Docker
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
