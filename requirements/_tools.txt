@@ -4,21 +4,23 @@
 #
 #    pip-compile --output-file=requirements/_tools.txt requirements/_tools.in
 #
-astroid==2.9.0
+astroid==2.11.2
     # via pylint
-black==21.12b0
+black==22.3.0
     # via -r requirements/_tools.in
-click==8.0.3
+click==8.1.2
     # via
     #   black
     #   pip-tools
+dill==0.3.4
+    # via pylint
 isort==5.10.1
     # via
     #   -r requirements/_tools.in
     #   pylint
-lazy-object-proxy==1.6.0
+lazy-object-proxy==1.7.1
     # via astroid
-mccabe==0.6.1
+mccabe==0.7.0
     # via pylint
 mypy-extensions==0.4.3
     # via black
@@ -26,28 +28,27 @@ pathspec==0.9.0
     # via black
 pep517==0.12.0
     # via pip-tools
-pip-tools==6.4.0
+pip-tools==6.6.0
     # via -r requirements/_tools.in
-platformdirs==2.4.0
+platformdirs==2.5.1
     # via
     #   black
     #   pylint
-pylint==2.12.2
+pylint==2.13.5
     # via -r requirements/_tools.in
-toml==0.10.2
-    # via pylint
-tomli==1.2.3
+tomli==2.0.1
     # via
     #   black
     #   pep517
-typing-extensions==4.0.1
+    #   pylint
+typing-extensions==4.1.1
     # via
     #   astroid
     #   black
     #   pylint
-wheel==0.37.0
+wheel==0.37.1
     # via pip-tools
-wrapt==1.13.3
+wrapt==1.14.0
     # via astroid
 
 # The following packages are considered to be unsafe in a requirements file:

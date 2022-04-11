@@ -4,35 +4,41 @@
 #
 #    pip-compile --output-file=requirements/_base.txt requirements/_base.in
 #
-anyio==3.4.0
+anyio==3.5.0
     # via httpcore
+argcomplete==2.0.0
+    # via yq
 certifi==2021.10.8
     # via
     #   httpcore
     #   httpx
-charset-normalizer==2.0.9
+charset-normalizer==2.0.12
     # via httpx
-click==8.0.3
+click==8.1.2
     # via -r requirements/_base.in
-envyaml==1.9.210927
+envyaml==1.10.211231
     # via -r requirements/_base.in
 h11==0.12.0
     # via httpcore
-httpcore==0.14.3
+httpcore==0.14.7
     # via httpx
-httpx==0.21.1
+httpx==0.22.0
     # via -r requirements/_base.in
 idna==3.3
     # via
     #   anyio
     #   rfc3986
     #   yarl
-multidict==5.2.0
+jq==1.2.2
+    # via -r requirements/_base.in
+multidict==6.0.2
     # via yarl
-pydantic==1.8.2
+pydantic==1.9.0
     # via -r requirements/_base.in
 pyyaml==6.0
-    # via envyaml
+    # via
+    #   envyaml
+    #   yq
 rfc3986[idna2008]==1.5.0
     # via httpx
 sniffio==1.2.0
@@ -40,7 +46,13 @@ sniffio==1.2.0
     #   anyio
     #   httpcore
     #   httpx
-typing-extensions==4.0.1
+toml==0.10.2
+    # via yq
+typing-extensions==4.1.1
     # via pydantic
+xmltodict==0.12.0
+    # via yq
 yarl==1.7.2
+    # via -r requirements/_base.in
+yq==2.14.0
     # via -r requirements/_base.in
