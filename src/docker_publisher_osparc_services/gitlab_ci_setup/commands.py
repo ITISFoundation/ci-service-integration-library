@@ -6,7 +6,7 @@ from typing import Dict, List
 from ..models import RegistryEndpointyModel, RepoModel
 
 DOCKER_LOGIN: str = (
-    "echo '${SCCI_TARGET_REGISTRY_PASSWORD}' | "
+    "echo ${SCCI_TARGET_REGISTRY_PASSWORD} | "
     "docker login ${SCCI_TARGET_REGISTRY_ADDRESS} --username ${SCCI_TARGET_REGISTRY_USER} --password-stdin"
 )
 
