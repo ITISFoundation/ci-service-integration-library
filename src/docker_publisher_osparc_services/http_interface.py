@@ -20,9 +20,7 @@ async def github_did_last_repo_run_pass(
     async with async_client() as client:
         repo_path = repo_model.repo.split("github.com/")[1].replace(".git", "")
         url = f"https://api.github.com/repos/{repo_path}/actions/runs"
-        result = await client.get(
-            url, params={"branch": repo_model.branch, "per_page": "10"}
-        )
+        result = await client.get(url, params={"per_page": "10"})
         runs = result.json()
         associated_run: Optional[Dict[str, Any]] = None
         for run in runs["workflow_runs"]:
