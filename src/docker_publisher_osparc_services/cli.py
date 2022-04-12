@@ -4,23 +4,14 @@ from pathlib import Path
 import click
 
 from . import __version__
-from .gitlab_ci_setup.commands import (
-    COMMANDS_BUILD,
-    COMMANDS_PUSH,
-    COMMANDS_TEST_BASE,
-    assemble_env_vars,
-    validate_commands_list,
-)
+from .gitlab_ci_setup.commands import (COMMANDS_BUILD, COMMANDS_PUSH,
+                                       COMMANDS_TEST_BASE, assemble_env_vars,
+                                       validate_commands_list)
 from .gitlab_ci_setup.pipeline_config import PipelineConfig, PipelineGenerator
 from .http_interface import get_tags_for_repo
 from .models import ConfigModel
-from .operations import (
-    assemble_compose,
-    clone_repo,
-    did_ci_pass,
-    fetch_images_from_compose_spec,
-    get_branch_hash,
-)
+from .operations import (assemble_compose, clone_repo, did_ci_pass,
+                         fetch_images_from_compose_spec, get_branch_hash)
 
 
 async def run_command(config: Path) -> None:
@@ -75,7 +66,10 @@ async def run_command(config: Path) -> None:
 
                     # build commands validation
                     env_vars = assemble_env_vars(
-                        repo_model, image_name, remote_name, tag
+                        repo_model=repo_model,
+                        registries=cfg.registries,
+                        image_name=image_name,
+                        tag=tag,
                     )
                     validate_commands_list(COMMANDS_BUILD, env_vars)
 

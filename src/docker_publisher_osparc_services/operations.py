@@ -5,7 +5,8 @@ from typing import List
 import yaml
 
 from .exceptions import BaseAppException, GITCommitHashInvalid
-from .http_interface import github_did_last_repo_run_pass, gitlab_did_last_repo_run_pass
+from .http_interface import (github_did_last_repo_run_pass,
+                             gitlab_did_last_repo_run_pass)
 from .models import HostType, RepoModel
 from .utils import command_output
 

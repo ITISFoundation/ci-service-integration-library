@@ -24,13 +24,37 @@ class ImageSrcDstModel(BaseModel):
 
 class RegistryTargetModel(BaseModel):
     target: str
-    local_to_remote: Dict[str, str] = Field(
+    local_to_test: Dict[str, str] = Field(
         ...,
-        description="mapping between locally built image name and remote name in registry",
+        description="mapping between: `local build` image and `remote test` image",
         example={
-            "simcore/services/dynamic/jupyter-math": "ci/osparc-sparc-internal/master/jupyter-math"
+            "simcore/services/dynamic/jupyter-math": "ci/builder/osparc-sparc-internal/master/jupyter-math"
         },
     )
+    test_to_release: Dict[str, str] = Field(
+        ...,
+        description="mapping between: `remote test` image test image and `remote release` image",
+        example={
+            "ci/builder/osparc-sparc-internal/master/jupyter-math": "ci/osparc-sparc-internal/master/jupyter-math"
+        },
+    )
+
+    @root_validator()
+    def validate_consistency(cls, values: Dict) -> Dict:
+        local_to_test = values["local_to_test"]
+        test_to_release = values["test_to_release"]
+        if len(local_to_test) != len(test_to_release):
+            raise ValueError(
+                f"Following dicts should have the same entry count {local_to_test=}, {test_to_release=}"
+            )
+
+        for test_image in local_to_test.values():
+            if test_image not in test_to_release:
+                raise ValueError(
+                    f"Expected {test_image=} to be found in {test_to_release=}"
+                )
+
+        return values
 
 
 class GitLabModel(BaseModel):
