@@ -58,7 +58,7 @@ def assemble_env_vars(
         "SCCI_TEST_IMAGE": test_image,
         "SCCI_RELEASE_IMAGE": release_image,
         "SCCI_TARGET_REGISTRY_ADDRESS": registry.address,
-        "SCCI_TARGET_REGISTRY_PASSWORD": registry.password,
+        "SCCI_TARGET_REGISTRY_PASSWORD": registry.password.get_secret_value(),
         "SCCI_TARGET_REGISTRY_USER": registry.user,
     }
 
