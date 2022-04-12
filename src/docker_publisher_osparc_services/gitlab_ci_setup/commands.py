@@ -14,20 +14,20 @@ COMMANDS_BUILD: CommandList = [
     "cd ${SCCI_CLONE_DIR}",
     "ooil compose",
     "docker-compose build",
-    "docker tag ${SCCI_IMAGE_NAME}:${SCCI_TAG} ${SCCI_IMAGE_NAME}:${SCCI_TAG}",
-    "docker push ${SCCI_IMAGE_NAME}:${SCCI_TAG}",
+    "docker tag ${SCCI_IMAGE_NAME}:${SCCI_TAG} ${SCCI_CI_IMAGE_NAME}:${SCCI_TAG}",
+    "docker push ${SCCI_CI_IMAGE_NAME}:${SCCI_TAG}",
 ]
 
 COMMANDS_TEST_BASE: CommandList = [
     "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
     "cd ${SCCI_CLONE_DIR}",
-    "docker pull ${SCCI_IMAGE_NAME}:${SCCI_TAG}",
+    "docker pull ${SCCI_CI_IMAGE_NAME}:${SCCI_TAG}",
     # if user defines extra commands those will be append here
 ]
 
 COMMANDS_PUSH: CommandList = [
-    "docker pull ${SCCI_IMAGE_NAME}:${SCCI_TAG}",
-    "docker tag ${SCCI_IMAGE_NAME}:${SCCI_TAG} ${SCCI_REMOTE_NAME}:${SCCI_TAG}",
+    "docker pull ${SCCI_CI_IMAGE_NAME}:${SCCI_TAG}",
+    "docker tag ${SCCI_CI_IMAGE_NAME}:${SCCI_TAG} ${SCCI_REMOTE_NAME}:${SCCI_TAG}",
     "docker push ${SCCI_REMOTE_NAME}:${SCCI_TAG}",
 ]
 
