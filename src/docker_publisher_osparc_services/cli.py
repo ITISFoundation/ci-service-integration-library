@@ -4,14 +4,23 @@ from pathlib import Path
 import click
 
 from . import __version__
-from .gitlab_ci_setup.commands import (COMMANDS_BUILD, COMMANDS_PUSH,
-                                       COMMANDS_TEST_BASE, assemble_env_vars,
-                                       validate_commands_list)
+from .gitlab_ci_setup.commands import (
+    COMMANDS_BUILD,
+    COMMANDS_PUSH,
+    COMMANDS_TEST_BASE,
+    assemble_env_vars,
+    validate_commands_list,
+)
 from .gitlab_ci_setup.pipeline_config import PipelineConfig, PipelineGenerator
 from .http_interface import get_tags_for_repo
 from .models import ConfigModel
-from .operations import (assemble_compose, clone_repo, did_ci_pass,
-                         fetch_images_from_compose_spec, get_branch_hash)
+from .operations import (
+    assemble_compose,
+    clone_repo,
+    did_ci_pass,
+    fetch_images_from_compose_spec,
+    get_branch_hash,
+)
 
 
 async def run_command(config: Path) -> None:
@@ -42,19 +51,20 @@ async def run_command(config: Path) -> None:
             # check if image is present in repository
             for image in images:
                 image_name, tag = image.split(":")
-                if image_name not in repo_model.registry.local_to_remote:
+                if image_name not in repo_model.registry.local_to_test:
                     raise ValueError(
                         (
                             f"Image={image_name} expected to be defined in "
-                            f"local_to_remote={repo_model.registry.local_to_remote}"
+                            f"local_to_test={repo_model.registry.local_to_test}"
                         )
                     )
-                remote_name = repo_model.registry.local_to_remote[image_name]
+                test_name = repo_model.registry.local_to_test[image_name]
+                release_name = repo_model.registry.test_to_release[test_name]
                 tags = await get_tags_for_repo(
-                    cfg.registries[repo_model.registry.target], remote_name
+                    cfg.registries[repo_model.registry.target], release_name
                 )
                 print(
-                    f"Checking tag '{tag}' for '{image}' was pushed at '{remote_name}'. "
+                    f"Checking tag '{tag}' for '{image}' was pushed at '{release_name}'. "
                     f"List of remote tags {[t for t in tags]}"
                 )
 
