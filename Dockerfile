@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.licenses="MIT"
 
 ARG REPO_NAME="https://github.com/GitHK/osparc-simcore-forked.git"
 ARG BRANCH_NAME="service-integration-library-additions"
-ARG COMMIT_SHA="62146708e34969262445a7d0bf409b04b0df6397"
+ARG COMMIT_SHA="b0ebe6887b55eb31100cbe62c1d8652480f40980"
 ARG CLONE_DIR="/opsarc"
 ARG PYTHON_VERSION="3.8.10"
 ARG DEBIAN_FRONTEND=noninteractive
