@@ -14,6 +14,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG DOCKER_COMPOSE_VERSION="1.29.2"
 ARG INSTALL_DIR="/package-install-dir"
 
+# Fixes issues with nvidia keys suddenly gone missing
+# TODO: check if can be removed
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub 18
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub 
+
 #Set of all dependencies needed for pyenv to work on Ubuntu
 RUN apt-get update && \ 
     apt-get install -y --no-install-recommends \

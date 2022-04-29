@@ -4,3 +4,4 @@ httpx
 pydantic
 yarl
 yq
+bump2version
