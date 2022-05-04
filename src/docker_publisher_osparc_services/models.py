@@ -91,8 +91,9 @@ class RepoModel(BaseModel):
             )
         return values
 
-    @property
-    def repo(self) -> str:
+    def _format_repo(
+        self, escape_credentials: bool = False, strip_credentials: bool = False
+    ) -> str:
         if self.gitlab is None:
             return self.address
 
@@ -101,8 +102,29 @@ class RepoModel(BaseModel):
         if user is None or password is None:
             return self.address
 
+        clear_password = password.get_secret_value()
+        if escape_credentials:
+            user = user.replace("@", "%40")
+            clear_password = clear_password.replace("@", "%40")
+
         protocol, url = self.address.split("://")
-        return f"{protocol}://{user}:{password.get_secret_value()}@{url}"
+
+        if strip_credentials:
+            return f"{protocol}://{url}"
+        else:
+            return f"{protocol}://{user}:{clear_password}@{url}"
+
+    @property
+    def repo(self) -> str:
+        return self._format_repo(escape_credentials=False)
+
+    @property
+    def escaped_repo(self) -> str:
+        return self._format_repo(escape_credentials=True)
+
+    @property
+    def http_url_to_repo(self) -> str:
+        return self._format_repo(strip_credentials=True)
 
 
 class ConfigModel(BaseModel):

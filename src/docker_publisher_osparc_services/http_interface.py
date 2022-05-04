@@ -49,10 +49,15 @@ async def _gitlab_get_project_id(repo_model: RepoModel) -> str:
             },
         )
         found_repos = result.json()
-        if len(found_repos) != 1:
-            message = f"Searching for {repo_name} did not yield the deisired reulst {found_repos}"
-            raise CouldNotFindAGitlabRepositoryRepoException(message)
-        return found_repos[0]["id"]
+        # check for http_url_to_repo
+        for repo in found_repos:
+            if repo_model.http_url_to_repo == repo["http_url_to_repo"]:
+                return repo["id"]
+
+        message = (
+            f"Searching for {repo_name} did not yield the deisired result {found_repos}"
+        )
+        raise CouldNotFindAGitlabRepositoryRepoException(message)
 
 
 async def gitlab_did_last_repo_run_pass(
