@@ -51,7 +51,7 @@ def assemble_env_vars(
     release_image = repo_model.registry.test_to_release[test_image]
 
     return {
-        "SCCI_REPO": repo_model.repo,
+        "SCCI_REPO": repo_model.escaped_repo,
         "SCCI_CLONE_DIR": f"{clone_directory}",
         "SCCI_IMAGE_NAME": image_name,
         "SCCI_TAG": tag,
