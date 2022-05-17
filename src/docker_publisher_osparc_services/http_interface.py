@@ -114,12 +114,12 @@ async def _registry_request(
 
             auth_result = await client.get(url, headers=auth_headers)
             if auth_result.status_code != codes.OK:
-                print(f"[ERROR] auth request: {auth_result.text}")
+                print(f"[WARNING] auth request: {auth_result.text}")
                 return {}
             return auth_result.json()
         else:
             if result.status_code != codes.OK:
-                print(f"[ERROR] request: {result.text}")
+                print(f"[WARNING] request: {result.text}")
                 return {}
             return result.json()
 
