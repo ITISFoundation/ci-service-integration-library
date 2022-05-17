@@ -4,7 +4,6 @@ from tempfile import TemporaryDirectory
 from typing import Dict, List
 
 from ..models import RegistryEndpointyModel, RepoModel
-from ..exceptions import IncorrectImageMapping
 
 CommandList = List[str]
 
