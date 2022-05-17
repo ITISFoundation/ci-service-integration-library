@@ -6,9 +6,9 @@ import click
 from . import __version__
 from .gitlab_ci_setup.commands import (
     assemble_env_vars,
-    get_build_commands,
-    get_push_commands,
-    get_test_commands,
+    COMMANDS_BUILD,
+    COMMANDS_PUSH,
+    COMMANDS_TEST_BASE,
     validate_commands_list,
 )
 from .gitlab_ci_setup.pipeline_config import PipelineConfig, PipelineGenerator
@@ -77,12 +77,12 @@ async def run_command(config: Path) -> None:
                     # build commands validation
                     env_vars = assemble_env_vars(
                         repo_model=repo_model,
+                        image_name=image_name,
                         registries=cfg.registries,
                         tag=tag,
                     )
-                    image_count = len(repo_model.registry.local_to_test)
 
-                    build_commands = get_build_commands(image_count)
+                    build_commands = COMMANDS_BUILD
                     validate_commands_list(build_commands, env_vars)
 
                     # check if test stage is required
@@ -90,13 +90,12 @@ async def run_command(config: Path) -> None:
                     if repo_model.ci_stage_test_script is not None:
                         # test commands assembly and validation
                         test_commands = (
-                            get_test_commands(image_count)
-                            + repo_model.ci_stage_test_script
+                            COMMANDS_TEST_BASE + repo_model.ci_stage_test_script
                         )
                         validate_commands_list(test_commands, env_vars)
 
                     # deploy stage validation
-                    push_commands = get_push_commands(image_count)
+                    push_commands = COMMANDS_PUSH
                     validate_commands_list(push_commands, env_vars)
 
                     pipeline_config = PipelineConfig(
