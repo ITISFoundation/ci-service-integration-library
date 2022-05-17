@@ -5,10 +5,10 @@ import click
 
 from . import __version__
 from .gitlab_ci_setup.commands import (
-    COMMANDS_BUILD,
-    COMMANDS_PUSH,
-    COMMANDS_TEST_BASE,
     assemble_env_vars,
+    get_build_commands,
+    get_push_commands,
+    get_test_commands,
     validate_commands_list,
 )
 from .gitlab_ci_setup.pipeline_config import PipelineConfig, PipelineGenerator
@@ -78,28 +78,32 @@ async def run_command(config: Path) -> None:
                     env_vars = assemble_env_vars(
                         repo_model=repo_model,
                         registries=cfg.registries,
-                        image_name=image_name,
                         tag=tag,
                     )
-                    validate_commands_list(COMMANDS_BUILD, env_vars)
+                    image_count = len(repo_model.registry.local_to_test)
+
+                    build_commands = get_build_commands(image_count)
+                    validate_commands_list(build_commands, env_vars)
 
                     # check if test stage is required
                     test_commands = None
                     if repo_model.ci_stage_test_script is not None:
                         # test commands assembly and validation
                         test_commands = (
-                            COMMANDS_TEST_BASE + repo_model.ci_stage_test_script
+                            get_test_commands(image_count)
+                            + repo_model.ci_stage_test_script
                         )
                         validate_commands_list(test_commands, env_vars)
 
                     # deploy stage validation
-                    validate_commands_list(COMMANDS_PUSH, env_vars)
+                    push_commands = get_push_commands(image_count)
+                    validate_commands_list(push_commands, env_vars)
 
                     pipeline_config = PipelineConfig(
                         target=image_name,
-                        build=COMMANDS_BUILD,
+                        build=build_commands,
                         test=test_commands,
-                        push=COMMANDS_PUSH,
+                        push=push_commands,
                     )
                     pipeline_config.write_config()
                     await pipeline_generator.add_pipeline_from(

@@ -39,7 +39,7 @@ async def github_did_last_repo_run_pass(
 async def _gitlab_get_project_id(repo_model: RepoModel) -> str:
     async with async_client() as client:
         parsed_url = URL(repo_model.address)
-        repo_name = parsed_url.path.split("/")[-1].strip(".git")
+        repo_name = parsed_url.path.split("/")[-1].replace(".git", "")
         host = parsed_url.host
         url = f"https://{host}/api/v4/projects?search={repo_name}"
         result = await client.get(
@@ -55,7 +55,7 @@ async def _gitlab_get_project_id(repo_model: RepoModel) -> str:
                 return repo["id"]
 
         message = (
-            f"Searching for {repo_name} did not yield the deisired result {found_repos}"
+            f"Searching for {repo_name} did not yield the deisired result {found_repos} {parsed_url}"
         )
         raise CouldNotFindAGitlabRepositoryRepoException(message)
 

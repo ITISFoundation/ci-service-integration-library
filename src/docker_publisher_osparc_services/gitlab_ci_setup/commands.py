@@ -4,63 +4,108 @@ from tempfile import TemporaryDirectory
 from typing import Dict, List
 
 from ..models import RegistryEndpointyModel, RepoModel
+from ..exceptions import IncorrectImageMapping
+
+CommandList = List[str]
 
 DOCKER_LOGIN: str = (
     "echo ${SCCI_TARGET_REGISTRY_PASSWORD} | "
     "docker login ${SCCI_TARGET_REGISTRY_ADDRESS} --username ${SCCI_TARGET_REGISTRY_USER} --password-stdin"
 )
 
-CommandList = List[str]
 
-COMMANDS_BUILD: CommandList = [
-    "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
-    "cd ${SCCI_CLONE_DIR}",
-    "ooil compose",
-    "docker-compose build",
-    DOCKER_LOGIN,
-    "docker tag ${SCCI_IMAGE_NAME}:${SCCI_TAG} ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
-    "docker push ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
-]
+def get_build_commands(image_count: int) -> CommandList:
+    commands: CommandList = [
+        "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
+        "cd ${SCCI_CLONE_DIR}",
+        "ooil compose",
+        "docker-compose build",
+        DOCKER_LOGIN,
+    ]
 
-COMMANDS_TEST_BASE: CommandList = [
-    "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
-    "cd ${SCCI_CLONE_DIR}",
-    DOCKER_LOGIN,
-    "docker pull ${SCCI_CI_IMAGE_NAME}:${SCCI_TAG}",
-    # if user defines extra commands those will be append here
-]
+    for k in range(image_count):
+        commands.append(
+            "docker tag ${SCCI_IMAGE_NAME_%s}:${SCCI_TAG} ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE_%s}:${SCCI_TAG}"
+            % (k, k)
+        )
+        commands.append(
+            "docker push ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE_%s}:${SCCI_TAG}"
+            % (k)
+        )
 
-COMMANDS_PUSH: CommandList = [
-    DOCKER_LOGIN,
-    "docker pull ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
-    "docker tag ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG} ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_RELEASE_IMAGE}:${SCCI_TAG}",
-    "docker push ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_RELEASE_IMAGE}:${SCCI_TAG}",
-]
+    return commands
+
+
+def get_test_commands(image_count: int) -> CommandList:
+    commands: CommandList = [
+        "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
+        "cd ${SCCI_CLONE_DIR}",
+        DOCKER_LOGIN,
+        "docker pull ${SCCI_CI_IMAGE_NAME}:${SCCI_TAG}",
+    ]
+
+    for k in range(image_count):
+        commands.append("docker pull ${SCCI_CI_IMAGE_NAME_%s}:${SCCI_TAG}" % (k))
+
+    return commands
+
+
+def get_push_commands(image_count: int) -> CommandList:
+    commands: CommandList = [
+        DOCKER_LOGIN,
+    ]
+
+    for k in range(image_count):
+        commands.append(
+            "docker pull ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE_%s}:${SCCI_TAG}"
+            % (k)
+        )
+
+        commands.append(
+            "docker tag ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE_%s}:${SCCI_TAG} ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_RELEASE_IMAGE_%s}:${SCCI_TAG}"
+            % (k, k)
+        )
+        commands.append(
+            "docker push ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_RELEASE_IMAGE_%s}:${SCCI_TAG}"
+            % (k)
+        )
+
+    return commands
 
 
 def assemble_env_vars(
     repo_model: RepoModel,
     registries: Dict[str, RegistryEndpointyModel],
-    image_name: str,
     tag: str,
 ) -> Dict[str, str]:
     clone_directory: Path = Path(TemporaryDirectory().name)
 
     registry: RegistryEndpointyModel = registries[repo_model.registry.target]
-    test_image = repo_model.registry.local_to_test[image_name]
-    release_image = repo_model.registry.test_to_release[test_image]
 
-    return {
+    env_vars: Dict[str, str] = {
         "SCCI_REPO": repo_model.escaped_repo,
         "SCCI_CLONE_DIR": f"{clone_directory}",
-        "SCCI_IMAGE_NAME": image_name,
         "SCCI_TAG": tag,
-        "SCCI_TEST_IMAGE": test_image,
-        "SCCI_RELEASE_IMAGE": release_image,
         "SCCI_TARGET_REGISTRY_ADDRESS": registry.address,
         "SCCI_TARGET_REGISTRY_PASSWORD": registry.password.get_secret_value(),
         "SCCI_TARGET_REGISTRY_USER": registry.user,
     }
+
+    # for multiple image builds
+    local_images: List[str] = list(repo_model.registry.local_to_test.keys())
+    test_images: List[str] = list(repo_model.registry.local_to_test.values())
+    release_images: List[str] = list(repo_model.registry.test_to_release.values())
+
+    for k, image_name in enumerate(local_images):
+        env_vars[f"SCCI_IMAGE_NAME_{k}"] = image_name
+
+    for k, image_name in enumerate(test_images):
+        env_vars[f"SCCI_TEST_IMAGE_{k}"] = image_name
+
+    for k, image_name in enumerate(release_images):
+        env_vars[f"SCCI_RELEASE_IMAGE_{k}"] = image_name
+
+    return env_vars
 
 
 def validate_commands_list(

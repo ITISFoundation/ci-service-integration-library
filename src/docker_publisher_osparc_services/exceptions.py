@@ -14,5 +14,16 @@ class CouldNotFindAGitlabRepositoryRepoException(BaseAppException):
     """not found the searched repository"""
 
 
+class IncorrectImageMapping(BaseAppException):
+    """not found the searched repository"""
+
+    def __init__(self, local_to_test, test_to_release) -> None:
+        self.local_to_test = local_to_test
+        self.test_to_release = test_to_release
+        super().__init__(
+            f"Could not map all images from {local_to_test=} to {test_to_release=}"
+        )
+
+
 class CommandFailedException(BaseAppException):
     """raised if a command fails"""
