@@ -11,7 +11,7 @@ class HostType(str, Enum):
     GITLAB = "gitlab"
 
 
-class RegistryEndpointyModel(BaseModel):
+class RegistryEndpointModel(BaseModel):
     address: str
     user: str
     password: SecretStr
@@ -135,13 +135,13 @@ class RepoModel(BaseModel):
 
 
 class ConfigModel(BaseModel):
-    registries: Dict[str, RegistryEndpointyModel]
+    registries: Dict[str, RegistryEndpointModel]
     repositories: List[RepoModel]
 
     @root_validator()
     @classmethod
     def check_registry_target_defined(cls, values: Dict) -> Dict:
-        registries: Dict[str, RegistryEndpointyModel] = values["registries"]
+        registries: Dict[str, RegistryEndpointModel] = values["registries"]
         repositories: List[RepoModel] = values["repositories"]
         for repo in repositories:
             if repo.registry.target not in registries:

@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Dict, List
 
-from ..models import RegistryEndpointyModel, RepoModel
+from ..models import RegistryEndpointModel, RepoModel
 
 DOCKER_LOGIN: str = (
     "echo ${SCCI_TARGET_REGISTRY_PASSWORD} | "
@@ -40,13 +40,13 @@ COMMANDS_PUSH: CommandList = [
 
 def assemble_env_vars(
     repo_model: RepoModel,
-    registries: Dict[str, RegistryEndpointyModel],
+    registries: Dict[str, RegistryEndpointModel],
     image_name: str,
     tag: str,
 ) -> Dict[str, str]:
     clone_directory: Path = Path(TemporaryDirectory().name)
 
-    registry: RegistryEndpointyModel = registries[repo_model.registry.target]
+    registry: RegistryEndpointModel = registries[repo_model.registry.target]
     test_image = repo_model.registry.local_to_test[image_name]
     release_image = repo_model.registry.test_to_release[test_image]
 

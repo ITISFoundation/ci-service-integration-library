@@ -5,7 +5,7 @@ from httpx import AsyncClient, codes
 from yarl import URL
 
 from .exceptions import CouldNotFindAGitlabRepositoryRepoException
-from .models import RegistryEndpointyModel, RepoModel
+from .models import RegistryEndpointModel, RepoModel
 
 
 @asynccontextmanager
@@ -85,7 +85,7 @@ async def gitlab_did_last_repo_run_pass(
 
 
 async def _registry_request(
-    registry_model: RegistryEndpointyModel, url_path: str
+    registry_model: RegistryEndpointModel, url_path: str
 ) -> Dict[str, Any]:
     auth = (registry_model.user, registry_model.password.get_secret_value())
     async with async_client() as client:
@@ -125,7 +125,7 @@ async def _registry_request(
 
 
 async def get_tags_for_repo(
-    registry_model: RegistryEndpointyModel, registry_path: str
+    registry_model: RegistryEndpointModel, registry_path: str
 ) -> Set[str]:
     tags_result = await _registry_request(
         registry_model, url_path=f"/v2/{registry_path}/tags/list"
