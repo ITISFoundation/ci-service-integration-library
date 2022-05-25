@@ -51,6 +51,13 @@ async def run_command(config: Path) -> None:
             # check if image is present in repository
             for image in images:
                 image_name, tag = image.split(":")
+
+                if image_name in repo_model.registry.skip_images:
+                    print(
+                        f"Skipping {image_name}, used as a dependency by other images"
+                    )
+                    continue
+
                 if image_name not in repo_model.registry.local_to_test:
                     raise ValueError(
                         (

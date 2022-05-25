@@ -38,6 +38,13 @@ class RegistryTargetModel(BaseModel):
             "ci/builder/osparc-sparc-internal/master/jupyter-math": "ci/osparc-sparc-internal/master/jupyter-math"
         },
     )
+    skip_images: List[str] = Field(
+        [],
+        description=(
+            "these images are only require for building and should will be "
+            "excluded when checking against local_to_test"
+        ),
+    )
 
     @root_validator()
     def validate_consistency(cls, values: Dict) -> Dict:
