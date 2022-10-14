@@ -5,10 +5,10 @@ LABEL org.opencontainers.image.authors="neagu@itis.swiss"
 LABEL org.opencontainers.image.source="https://github.com/ITISFoundation/ci-service-integration-library"
 LABEL org.opencontainers.image.licenses="MIT"
 
-ARG REPO_NAME="https://github.com/GitHK/osparc-simcore-forked.git"
-ARG BRANCH_NAME="service-integration-library-additions"
-ARG COMMIT_SHA="4973ac6123511ecb06ff039eae5e6dfc81d45179"
-ARG CLONE_DIR="/opsarc"
+ARG REPO_NAME="https://github.com/ITISFoundation/osparc-simcore.git"
+ARG BRANCH_NAME="master"
+ARG COMMIT_SHA="2169876871339b125a6badc14c9c26d4cfccb26d"
+ARG CLONE_DIR="/osparc"
 ARG PYTHON_VERSION="3.9.12"
 ARG DEBIAN_FRONTEND=noninteractive
 ARG DOCKER_COMPOSE_VERSION="1.29.2"
@@ -17,10 +17,10 @@ ARG INSTALL_DIR="/package-install-dir"
 # Fixes issues with nvidia keys suddenly gone missing
 # TODO: check if can be removed
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub 18
-RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub 
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
 
 #Set of all dependencies needed for pyenv to work on Ubuntu
-RUN apt-get update && \ 
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     make \
     build-essential \
