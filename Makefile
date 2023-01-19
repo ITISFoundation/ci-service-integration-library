@@ -104,3 +104,11 @@ test-installs:	## checks all required commands are present
 	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} jq --version
 	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} yq --version
 	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} bump2version --help
+
+
+.PHONY: new-release
+new-release:	## starts a release, usage: `make new-release tag=TAG`
+	@echo "Releasing: '${tag}'"
+	git tag "${tag}"
+	git push --tags
+	
