@@ -111,4 +111,6 @@ new-release:	## starts a release, usage: `make new-release tag=TAG`
 	@echo "Releasing: '${tag}'"
 	git tag "${tag}"
 	git push --tags
+	@echo "Please open below link to finish the release"
+	@echo "https://github.com/ITISFoundation/ci-service-integration-library/releases/new?tag=${tag}&title=Release%27${tag}"
 	
