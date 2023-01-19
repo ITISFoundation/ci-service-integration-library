@@ -70,7 +70,7 @@ RUN set -ex && \
 # cloning and installing ooil
 RUN git clone -n ${REPO_NAME} ${CLONE_DIR} && \
     cd ${CLONE_DIR} && \
-    git checkout -b ${BRANCH_NAME} ${COMMIT_SHA} && \
+    git checkout -B ${BRANCH_NAME} ${COMMIT_SHA} && \
     # install ooil and requirements
     cd ${CLONE_DIR}/packages/service-integration && \
     pip install --no-cache-dir --upgrade pip docker-compose==${DOCKER_COMPOSE_VERSION} && \
