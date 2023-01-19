@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.licenses="MIT"
 
 ARG REPO_NAME="https://github.com/GitHK/osparc-simcore-forked.git"
 ARG BRANCH_NAME="pr-osparc-block-egress"
-ARG COMMIT_SHA="bd7a262bc7f616d74ea9a94774bfbb283fcc3ae7"
+ARG COMMIT_SHA="6d07acfd9bea0390e6eff4644b138d9dc3a38a24"
 ARG CLONE_DIR="/osparc"
 ARG PYTHON_VERSION="3.9.12"
 ARG DEBIAN_FRONTEND=noninteractive
