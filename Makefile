@@ -109,8 +109,8 @@ test-installs:	## checks all required commands are present
 .PHONY: new-release
 new-release:	## starts a release, usage: `make new-release tag=TAG`
 	@echo "Releasing: '${tag}'"
-	git push
 	git tag "${tag}"
+	git push
 	git push --tags
 	@echo "Please open below link to finish the release"
 	@echo "https://github.com/ITISFoundation/ci-service-integration-library/releases/new?tag=${tag}&title=Release%20${tag}"
