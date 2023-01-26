@@ -6,8 +6,8 @@ LABEL org.opencontainers.image.source="https://github.com/ITISFoundation/ci-serv
 LABEL org.opencontainers.image.licenses="MIT"
 
 ARG REPO_NAME="https://github.com/GitHK/osparc-simcore-forked.git"
-ARG BRANCH_NAME="pr-osparc-block-egress"
-ARG COMMIT_SHA="6d07acfd9bea0390e6eff4644b138d9dc3a38a24"
+ARG BRANCH_NAME="add-volume-size-limits"
+ARG COMMIT_SHA="5c77af3efb47b692290822482a8adee29f6f95de"
 ARG CLONE_DIR="/osparc"
 ARG PYTHON_VERSION="3.9.12"
 ARG DEBIAN_FRONTEND=noninteractive
