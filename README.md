@@ -18,7 +18,8 @@ Bundles tooling required for building validating and releasing osparc services:
 Create a tag with the following format `v(OOIL-VERSION)[-dev]` where:
 - `(OOIL-VERSION)` is the current version of the [ITISFoundation/osparc-simcore/tree/master/packages/service-integration](https://github.com/ITISFoundation/osparc-simcore/tree/master/packages/service-integration)
 - `[-dev]` is added if you are building from a fork or for development testing reasons
-- go to the releases page and create a new release form the new tag
+- use `make new-release tag=TAG_NAME` to tag and push all latest changes and create a release link.
+- click on the release link, open it and add the description for the release
 - inside the actions tab you will see a new build
 - check out [Docker Hub](https://hub.docker.com/r/itisfoundation/ci-service-integration-library/tags) fort the new tag and updated `latest` tag
 
