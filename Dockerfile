@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.authors="neagu@itis.swiss"
 LABEL org.opencontainers.image.source="https://github.com/ITISFoundation/ci-service-integration-library"
 LABEL org.opencontainers.image.licenses="MIT"
 
-ARG REPO_NAME="https://github.com/GitHK/osparc-simcore-forked.git"
+ARG REPO_NAME="https://github.com/ITISFoundation/osparc-simcore.git"
 ARG BRANCH_NAME="add-volume-size-limits"
 ARG COMMIT_SHA="5c77af3efb47b692290822482a8adee29f6f95de"
 ARG CLONE_DIR="/osparc"
