@@ -6,8 +6,8 @@ LABEL org.opencontainers.image.source="https://github.com/ITISFoundation/ci-serv
 LABEL org.opencontainers.image.licenses="MIT"
 
 ARG REPO_NAME="https://github.com/GitHK/osparc-simcore-forked.git"
-ARG BRANCH_NAME="add-volume-size-limits"
-ARG COMMIT_SHA="fe2700a1913dba98dac5406db76cbd3a964f7166"
+ARG BRANCH_NAME="pr-osparc-add-min-visible-inputs-label"
+ARG COMMIT_SHA="6d169eac480dabe9ef35fe9a7a0530aea3f241af"
 ARG CLONE_DIR="/osparc"
 ARG PYTHON_VERSION="3.10.10"
 ARG DEBIAN_FRONTEND=noninteractive
