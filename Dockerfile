@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.licenses="MIT"
 
 ARG REPO_NAME="https://github.com/GitHK/osparc-simcore-forked.git"
 ARG BRANCH_NAME="pr-soaprc-dy-sidecar-entrypoint-calls"
-ARG COMMIT_SHA="618d2a5eadf06c9b8050beec2bb9cad81ced773e"
+ARG COMMIT_SHA="44ad0ad1476ba258cb7dd9af1cdadb65240d83bb"
 ARG CLONE_DIR="/osparc"
 ARG PYTHON_VERSION="3.10.10"
 ARG DEBIAN_FRONTEND=noninteractive
