@@ -15,6 +15,8 @@ Bundles tooling required for building validating and releasing osparc services:
 
 # How to release a new image
 
+**NOTE:** Make sure all your changes have been **committed**!
+
 Create a tag with the following format `v(OOIL-VERSION)[-dev]` where:
 - `(OOIL-VERSION)` is the current version of the [ITISFoundation/osparc-simcore/tree/master/packages/service-integration](https://github.com/ITISFoundation/osparc-simcore/tree/master/packages/service-integration)
 - `[-dev]` is added if you are building from a fork or for development testing reasons
