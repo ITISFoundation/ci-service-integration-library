@@ -13,6 +13,8 @@ ARG PYTHON_VERSION="3.10.10"
 ARG DEBIAN_FRONTEND=noninteractive
 ARG DOCKER_COMPOSE_VERSION="1.29.2"
 ARG INSTALL_DIR="/package-install-dir"
+# NOTE: keep in sync with the version installed in the dynamic-sidecar
+ARG DOCKER_COMPOSE_VERSION="2.20.2"
 
 # Fixes issues with nvidia keys suddenly gone missing
 # TODO: check if can be removed
@@ -52,7 +54,15 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /
     "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
     $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && \
-    apt-get install -y docker-ce docker-ce-cli containerd.io
+    apt-get install -y --no-install-recommends \
+    docker-ce \
+    containerd.io \
+    docker-ce-cli && \
+    mkdir -p /usr/local/lib/docker/cli-plugins && \
+    curl -SL https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose && \
+    chmod +x /usr/local/lib/docker/cli-plugins/docker-compose && \
+    docker --version && \
+    docker compose version
 
 
 # Set-up necessary Env vars for PyEnv
@@ -73,7 +83,6 @@ RUN git clone -n ${REPO_NAME} ${CLONE_DIR} && \
     git checkout -B ${BRANCH_NAME} ${COMMIT_SHA} && \
     # install ooil and requirements
     cd ${CLONE_DIR}/packages/service-integration && \
-    pip install --no-cache-dir --upgrade pip docker-compose==${DOCKER_COMPOSE_VERSION} && \
     pip install --no-cache-dir -r requirements/prod.txt && \
     pip install --no-cache-dir . && \
     cd / && \
