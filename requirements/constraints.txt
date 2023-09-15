@@ -1,0 +1,2 @@
+# SEE https://github.com/ITISFoundation/osparc-simcore/issues/4481
+pydantic<2.0
