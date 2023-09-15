@@ -98,7 +98,7 @@ shell:	## Start a shell in the built image
 test-installs:	## checks all required commands are present
 	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} python --version
 	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} docker --version
-	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} docker-compose --version
+	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} docker compose version
 	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} ooil --version
 	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} dpos --version
 	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} jq --version
