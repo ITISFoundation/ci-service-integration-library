@@ -16,7 +16,7 @@ COMMANDS_BUILD: CommandList = [
     "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
     "cd ${SCCI_CLONE_DIR}",
     "ooil compose",
-    "docker-compose build",
+    "docker compose build",
     DOCKER_LOGIN,
     "docker tag ${SCCI_IMAGE_NAME}:${SCCI_TAG} ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
     "docker push ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
