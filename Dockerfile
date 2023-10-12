@@ -6,8 +6,8 @@ LABEL org.opencontainers.image.source="https://github.com/ITISFoundation/ci-serv
 LABEL org.opencontainers.image.licenses="MIT"
 
 ARG REPO_NAME="https://github.com/GitHK/osparc-simcore-forked.git"
-ARG BRANCH_NAME="pr-osparc-add-preferences-user-services"
-ARG COMMIT_SHA="1bb3f53e7769f77363b5dc586041e7bf7becf095"
+ARG BRANCH_NAME="pr-osparc-osparc-variables-substitution"
+ARG COMMIT_SHA="a11e6dbc9f279529b43c435979036190fda620a9"
 ARG CLONE_DIR="/osparc"
 ARG PYTHON_VERSION="3.10.10"
 ARG DEBIAN_FRONTEND=noninteractive
