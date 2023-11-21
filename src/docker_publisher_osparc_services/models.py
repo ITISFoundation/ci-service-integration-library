@@ -46,6 +46,7 @@ class RegistryTargetModel(BaseModel):
         ),
     )
 
+    @classmethod
     @root_validator()
     def validate_consistency(cls, values: Dict) -> Dict:
         local_to_test = values["local_to_test"]
@@ -89,7 +90,12 @@ class RepoModel(BaseModel):
             "clone location"
         ),
     )
+    pre_docker_build_hooks: list[str] = Field(
+        default_factory=list,
+        description="a list of commands to execute before running the docker build command",
+    )
 
+    @classmethod
     @root_validator()
     def require_access_token_for_gitlab(cls, values):
         if values["host_type"] == HostType.GITLAB and values["gitlab"] is None:

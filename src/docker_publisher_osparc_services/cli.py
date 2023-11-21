@@ -6,9 +6,9 @@ import click
 from . import __version__
 from .gitlab_ci_setup.commands import (
     assemble_env_vars,
-    COMMANDS_BUILD,
-    COMMANDS_PUSH,
-    COMMANDS_TEST_BASE,
+    get_commands_test_base,
+    get_commands_push,
+    get_commands_build_base,
     validate_commands_list,
 )
 from .gitlab_ci_setup.pipeline_config import PipelineConfig, PipelineGenerator
@@ -26,9 +26,6 @@ from .operations import (
 async def run_command(config: Path) -> None:
     cfg = ConfigModel.from_cfg_path(config)
     print(cfg)
-
-    # TODO: start in parallel??
-    # yes to avoid issues with failing missconfigured repositories
 
     async with PipelineGenerator() as pipeline_generator:
         for repo_model in cfg.repositories:
@@ -89,7 +86,9 @@ async def run_command(config: Path) -> None:
                         tag=tag,
                     )
 
-                    build_commands = COMMANDS_BUILD
+                    build_commands = get_commands_build_base(
+                        repo_model.pre_docker_build_hooks
+                    )
                     validate_commands_list(build_commands, env_vars)
 
                     # check if test stage is required
@@ -97,12 +96,12 @@ async def run_command(config: Path) -> None:
                     if repo_model.ci_stage_test_script is not None:
                         # test commands assembly and validation
                         test_commands = (
-                            COMMANDS_TEST_BASE + repo_model.ci_stage_test_script
+                            get_commands_test_base() + repo_model.ci_stage_test_script
                         )
                         validate_commands_list(test_commands, env_vars)
 
                     # deploy stage validation
-                    push_commands = COMMANDS_PUSH
+                    push_commands = get_commands_push()
                     validate_commands_list(push_commands, env_vars)
 
                     pipeline_config = PipelineConfig(

@@ -12,30 +12,37 @@ DOCKER_LOGIN: str = (
 
 CommandList = List[str]
 
-COMMANDS_BUILD: CommandList = [
-    "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
-    "cd ${SCCI_CLONE_DIR}",
-    "ooil compose",
-    "docker compose build",
-    DOCKER_LOGIN,
-    "docker tag ${SCCI_IMAGE_NAME}:${SCCI_TAG} ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
-    "docker push ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
-]
 
-COMMANDS_TEST_BASE: CommandList = [
-    "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
-    "cd ${SCCI_CLONE_DIR}",
-    DOCKER_LOGIN,
-    "docker pull ${SCCI_CI_IMAGE_NAME}:${SCCI_TAG}",
-    # if user defines extra commands those will be append here
-]
+def get_commands_build_base(pre_docker_build_hooks: list[str]) -> CommandList:
+    return [
+        "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
+        "cd ${SCCI_CLONE_DIR}",
+        "ooil compose",
+        "docker compose build",
+        *pre_docker_build_hooks,
+        DOCKER_LOGIN,
+        "docker tag ${SCCI_IMAGE_NAME}:${SCCI_TAG} ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
+        "docker push ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
+    ]
 
-COMMANDS_PUSH: CommandList = [
-    DOCKER_LOGIN,
-    "docker pull ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
-    "docker tag ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG} ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_RELEASE_IMAGE}:${SCCI_TAG}",
-    "docker push ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_RELEASE_IMAGE}:${SCCI_TAG}",
-]
+
+def get_commands_test_base() -> CommandList:
+    return [
+        "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
+        "cd ${SCCI_CLONE_DIR}",
+        DOCKER_LOGIN,
+        "docker pull ${SCCI_CI_IMAGE_NAME}:${SCCI_TAG}",
+        # if user defines extra commands those will be append here
+    ]
+
+
+def get_commands_push() -> CommandList:
+    return [
+        DOCKER_LOGIN,
+        "docker pull ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
+        "docker tag ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG} ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_RELEASE_IMAGE}:${SCCI_TAG}",
+        "docker push ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_RELEASE_IMAGE}:${SCCI_TAG}",
+    ]
 
 
 def assemble_env_vars(
