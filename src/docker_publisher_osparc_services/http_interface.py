@@ -14,7 +14,9 @@ async def async_client(timeout: float = 30, **kwargs) -> AsyncIterator[AsyncClie
         yield client
 
 
-async def github_did_last_repo_run_pass(repo_model, branch_hash: str) -> bool:
+async def github_did_last_repo_run_pass(
+    repo_model: RepoModel, branch_hash: str
+) -> bool:
     async with async_client() as client:
         repo_path = repo_model.repo.split("github.com/")[1].replace(".git", "")
         url = f"https://api.github.com/repos/{repo_path}/actions/runs"
