@@ -14,19 +14,27 @@ async def async_client(timeout: float = 30, **kwargs) -> AsyncIterator[AsyncClie
         yield client
 
 
-async def github_did_last_repo_run_pass(
-    repo_model: RepoModel, branch_hash: str
-) -> bool:
+async def github_did_last_repo_run_pass(repo_model, branch_hash: str) -> bool:
     async with async_client() as client:
         repo_path = repo_model.repo.split("github.com/")[1].replace(".git", "")
         url = f"https://api.github.com/repos/{repo_path}/actions/runs"
-        result = await client.get(url, params={"per_page": "10"})
-        runs = result.json()
+        params = {"per_page": "10"}
         associated_run: Optional[Dict[str, Any]] = None
-        for run in runs["workflow_runs"]:
-            if run["head_commit"]["id"] == branch_hash:
-                associated_run = run
+
+        while url:
+            result = await client.get(url, params=params)
+            runs = result.json()
+
+            for run in runs["workflow_runs"]:
+                if run["head_commit"]["id"] == branch_hash:
+                    associated_run = run
+                    break
+
+            if associated_run is not None:  # Branch hash found, exit the loop
                 break
+
+            url = result.links.get("next", {}).get("url")
+
         if associated_run is None:
             raise Exception(f"Could not find associated run to commit {branch_hash}")
 
