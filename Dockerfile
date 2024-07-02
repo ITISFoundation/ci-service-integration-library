@@ -5,9 +5,9 @@ LABEL org.opencontainers.image.authors="neagu@itis.swiss"
 LABEL org.opencontainers.image.source="https://github.com/ITISFoundation/ci-service-integration-library"
 LABEL org.opencontainers.image.licenses="MIT"
 
-ARG REPO_NAME="https://github.com/GitHK/osparc-simcore-forked.git"
-ARG BRANCH_NAME="pr-osparc-is-project-inactive"
-ARG COMMIT_SHA="971b993ae2295e3d915a1f146aa79d4ed07f888c"
+ARG REPO_NAME="https://github.com/ITISFoundation/osparc-simcore.git"
+ARG BRANCH_NAME="master"
+ARG COMMIT_SHA="71e5513b67b7050ef5f001583723537d13d4f9ad"
 ARG CLONE_DIR="/osparc"
 ARG PYTHON_VERSION="3.10.10"
 ARG DEBIAN_FRONTEND=noninteractive
