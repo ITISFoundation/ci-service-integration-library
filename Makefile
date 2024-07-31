@@ -65,6 +65,7 @@ clean: ## cleans all unversioned files in project and temp files create by this 
 run-dev: ## starts the script for development
 	make build
 	docker run -it --rm \
+	-u $(shell id -u):$(shell id -g) \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	-v $(PWD)/config.yaml:/tmp/config.yaml \
 	-e REGISTRY_SPEAG_COM_ADDRESS=${REGISTRY_SPEAG_COM_ADDRESS} \
@@ -83,6 +84,7 @@ build:	## Builds current image
 .PHONY: shell
 shell:	## Start a shell in the built image
 	docker run -it --rm \
+	-u $(shell id -u):$(shell id -g) \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	-v $(PWD)/config.yaml:/tmp/config.yaml \
 	-e REGISTRY_SPEAG_COM_ADDRESS=${REGISTRY_SPEAG_COM_ADDRESS} \
@@ -96,14 +98,14 @@ shell:	## Start a shell in the built image
 
 .PHONY: test-installs
 test-installs:	## checks all required commands are present
-	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} python --version
-	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} docker --version
-	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} docker compose version
-	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} ooil --version
-	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} dpos --version
-	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} jq --version
-	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} yq --version
-	docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} bump2version --help
+	docker run -it --rm -u $(shell id -u):$(shell id -g) -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} python --version
+	docker run -it --rm -u $(shell id -u):$(shell id -g) -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} docker --version
+	docker run -it --rm -u $(shell id -u):$(shell id -g) -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} docker compose version
+	docker run -it --rm -u $(shell id -u):$(shell id -g) -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} ooil --version
+	docker run -it --rm -u $(shell id -u):$(shell id -g) -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} dpos --version
+	docker run -it --rm -u $(shell id -u):$(shell id -g) -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} jq --version
+	docker run -it --rm -u $(shell id -u):$(shell id -g) -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} yq --version
+	docker run -it --rm -u $(shell id -u):$(shell id -g) -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} bump2version --help
 
 
 .PHONY: new-release

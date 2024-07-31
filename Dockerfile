@@ -66,7 +66,8 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /
 
 
 # Set-up necessary Env vars for PyEnv
-ENV PYENV_ROOT="/root/.pyenv"
+
+ENV PYENV_ROOT="/pyent-root"
 ENV PATH=$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
 # Install pyenv
 RUN set -ex && \
@@ -77,6 +78,7 @@ RUN set -ex && \
     pyenv global venv && \
     pyenv rehash && \
     python --version
+RUN chmod 777 /pyent-root
 
 # cloning and installing ooil
 RUN git clone -n ${REPO_NAME} ${CLONE_DIR} && \
