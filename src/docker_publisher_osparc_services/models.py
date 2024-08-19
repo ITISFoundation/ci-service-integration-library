@@ -72,7 +72,7 @@ class GitLabModel(BaseModel):
 
 
 class GitHubModel(BaseModel):
-    gitlab_token: str
+    github_token: str
 
 
 class RepoModel(BaseModel):
