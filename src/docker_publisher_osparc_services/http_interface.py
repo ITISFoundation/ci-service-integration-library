@@ -20,11 +20,12 @@ async def github_did_last_repo_run_pass(
     async with async_client() as client:
         repo_path = repo_model.repo.split("github.com/")[1].replace(".git", "")
         url = f"https://api.github.com/repos/{repo_path}/actions/runs"
+        headers = {"Authorization": f"Bearer {repo_model.github.gitlab_token}"}
         params = {"per_page": "10"}
         associated_run: Optional[Dict[str, Any]] = None
 
         while url:
-            result = await client.get(url, params=params)
+            result = await client.get(url, params=params, headers=headers)
             runs = result.json()
 
             for run in runs["workflow_runs"]:

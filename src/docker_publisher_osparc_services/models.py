@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from envyaml import EnvYAML
-from pydantic import BaseModel, Field, SecretStr, root_validator
+from pydantic import BaseModel, Field, SecretStr, root_validator, validator
 
 
 class HostType(str, Enum):
@@ -71,13 +71,13 @@ class GitLabModel(BaseModel):
     deploy_token_password: SecretStr
 
 
+class GitHubModel(BaseModel):
+    gitlab_token: str
+
+
 class RepoModel(BaseModel):
     address: str = Field(..., description="clone address https")
-    gitlab: Optional[GitLabModel] = Field(
-        None, description="GitLab credentials to clone and access the v4 API"
-    )
     branch: str
-    host_type: HostType
     registry: RegistryTargetModel
     clone_path: Optional[Path] = Field(
         None, description="Used internally to specify directory where to clone"
@@ -95,13 +95,24 @@ class RepoModel(BaseModel):
         description="a list of commands to execute before running the docker build command",
     )
 
+    host_type: HostType
+    gitlab: Optional[GitLabModel] = Field(
+        None, description="GitLab credentials to clone and access the v4 API"
+    )
+    github: Optional[GitHubModel] = None
+
     @classmethod
     @root_validator()
-    def require_access_token_for_gitlab(cls, values):
+    def require_access_token(cls, values):
         if values["host_type"] == HostType.GITLAB and values["gitlab"] is None:
             raise ValueError(
                 f"Provide a valid 'gitlab' field for {HostType.GITLAB} repo"
             )
+        if values["host_type"] == HostType.GITHUB and values["github"] is None:
+            raise ValueError(
+                f"Provide a valid 'gitlab' field for {HostType.GITHUB} repo"
+            )
+
         return values
 
     def _format_repo(
