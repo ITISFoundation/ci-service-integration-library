@@ -67,18 +67,18 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /
 
 # Set-up necessary Env vars for PyEnv
 
-ENV PYENV_ROOT="/pyent-root"
+ENV PYENV_ROOT="/pyenv-root"
 ENV PATH=$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
 # Install pyenv
 RUN set -ex && \
     curl https://pyenv.run | bash && \
+    eval "$(pyenv init -)" && \
     pyenv update && \
     pyenv install ${PYTHON_VERSION} && \
-    pyenv virtualenv ${PYTHON_VERSION} venv && \
-    pyenv global venv && \
+    pyenv global ${PYTHON_VERSION} && \
     pyenv rehash && \
     python --version
-RUN chmod 777 /pyent-root
+RUN chmod 777 /pyenv-root
 
 # cloning and installing ooil
 RUN git clone -n ${REPO_NAME} ${CLONE_DIR} && \
@@ -86,8 +86,8 @@ RUN git clone -n ${REPO_NAME} ${CLONE_DIR} && \
     git checkout -B ${BRANCH_NAME} ${COMMIT_SHA} && \
     # install ooil and requirements
     cd ${CLONE_DIR}/packages/service-integration && \
-    pip install uv && \
-    uv pip sync requirements/prod.txt && \
+    pip install --upgrade pip uv && \
+    uv pip sync --system requirements/prod.txt && \
     pip install --no-cache-dir . && \
     cd / && \
     # remove source directory
