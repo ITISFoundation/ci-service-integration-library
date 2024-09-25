@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.licenses="MIT"
 
 ARG REPO_NAME="https://github.com/ITISFoundation/osparc-simcore.git"
 ARG BRANCH_NAME="master"
-ARG COMMIT_SHA="fa2faadba926c3658c39ecfbf0eeeab69fa7c46e"
+ARG COMMIT_SHA="890f1aeb8dccbf55b4ab5258c44fa0d4b6a94cb7"
 ARG CLONE_DIR="/osparc"
 ARG PYTHON_VERSION="3.11.9"
 ARG DEBIAN_FRONTEND=noninteractive
