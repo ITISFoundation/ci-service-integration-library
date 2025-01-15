@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from envyaml import EnvYAML
-from pydantic import BaseModel, Field, SecretStr, root_validator, validator
+from pydantic import BaseModel, Field, SecretStr, model_validator
 
 
 class HostType(str, Enum):
@@ -27,16 +27,16 @@ class RegistryTargetModel(BaseModel):
     local_to_test: Dict[str, str] = Field(
         ...,
         description="mapping between: `local build` image and `remote test` image",
-        example={
+        examples=[{
             "simcore/services/dynamic/jupyter-math": "ci/builder/osparc-sparc-internal/master/jupyter-math"
-        },
+        }],
     )
     test_to_release: Dict[str, str] = Field(
         ...,
         description="mapping between: `remote test` image test image and `remote release` image",
-        example={
+        examples=[{
             "ci/builder/osparc-sparc-internal/master/jupyter-math": "ci/osparc-sparc-internal/master/jupyter-math"
-        },
+        }],
     )
     skip_images: List[str] = Field(
         [],
@@ -46,8 +46,9 @@ class RegistryTargetModel(BaseModel):
         ),
     )
 
+    
+    @model_validator(mode="before")
     @classmethod
-    @root_validator()
     def validate_consistency(cls, values: Dict) -> Dict:
         local_to_test = values["local_to_test"]
         test_to_release = values["test_to_release"]
@@ -102,7 +103,7 @@ class RepoModel(BaseModel):
     github: Optional[GitHubModel] = None
 
     @classmethod
-    @root_validator()
+    @model_validator(mode="before")
     def require_access_token(cls, values):
         if values["host_type"] == HostType.GITLAB and values["gitlab"] is None:
             raise ValueError(
@@ -155,7 +156,7 @@ class ConfigModel(BaseModel):
     registries: Dict[str, RegistryEndpointModel]
     repositories: List[RepoModel]
 
-    @root_validator()
+    @model_validator(mode="before")
     @classmethod
     def check_registry_target_defined(cls, values: Dict) -> Dict:
         registries: Dict[str, RegistryEndpointModel] = values["registries"]

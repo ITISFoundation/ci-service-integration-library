@@ -5,8 +5,7 @@ from io import TextIOWrapper
 from types import TracebackType
 from typing import Deque, Dict, Optional, Tuple, Type
 
-from pydantic import BaseModel, Field
-from pydantic.class_validators import validator
+from pydantic import field_validator, BaseModel, Field
 
 from .commands import CommandList
 from .constants import GENERATED_PIPELINE_PATH, PIPELINE_CONFIGS
@@ -23,7 +22,7 @@ class PipelineConfig(BaseModel):
     )
     push: CommandList = Field(..., description="commands used to push the image")
 
-    @validator("target")
+    @field_validator("target")
     @classmethod
     def escape_name(cls, v):
         return f"{v}".replace("/", "-")
