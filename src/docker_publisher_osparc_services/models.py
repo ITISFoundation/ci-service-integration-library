@@ -162,7 +162,7 @@ class ConfigModel(BaseModel):
         registries: Dict[str, RegistryEndpointModel] = values["registries"]
         repositories: List[RepoModel] = values["repositories"]
         for repo in repositories:
-            if repo.registry.target not in registries:
+            if repo["registry"]["target"] not in registries:
                 raise ValueError(
                     f"Repo {repo}:\n- registry.target={repo.registry.target} not found in registries={registries}"
                 )
@@ -171,4 +171,4 @@ class ConfigModel(BaseModel):
     @classmethod
     def from_cfg_path(cls, config_path: Path) -> "ConfigModel":
         config_dict = EnvYAML(config_path)
-        return cls.parse_obj(config_dict)
+        return cls.parse_obj(dict(config_dict))

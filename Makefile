@@ -65,7 +65,6 @@ clean: ## cleans all unversioned files in project and temp files create by this 
 run-dev: ## starts the script for development
 	make build
 	docker run -it --rm \
-	-u $(shell id -u):$(shell id -g) \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	-v $(PWD)/config.yaml:/tmp/config.yaml \
 	-e REGISTRY_SPEAG_COM_ADDRESS=${REGISTRY_SPEAG_COM_ADDRESS} \
