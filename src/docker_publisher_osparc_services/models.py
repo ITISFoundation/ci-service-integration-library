@@ -102,14 +102,14 @@ class RepoModel(BaseModel):
     )
     github: Optional[GitHubModel] = None
 
-    @classmethod
     @model_validator(mode="before")
+    @classmethod
     def require_access_token(cls, values):
-        if values["host_type"] == HostType.GITLAB and values["gitlab"] is None:
+        if values["host_type"] == HostType.GITLAB and values("gitlab", None) is None:
             raise ValueError(
                 f"Provide a valid 'gitlab' field for {HostType.GITLAB} repo"
             )
-        if values["host_type"] == HostType.GITHUB and values["github"] is None:
+        if values["host_type"] == HostType.GITHUB and values.get("github", None) is None:
             raise ValueError(
                 f"Provide a valid 'gitlab' field for {HostType.GITHUB} repo"
             )
