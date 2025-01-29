@@ -40,7 +40,7 @@ RUN apt-get update && \
     jq
 
 # NOTE: keep in sync with the version installed in the dynamic-sidecar
-ARG DOCKER_COMPOSE_VERSION="2.20.2"
+ARG DOCKER_COMPOSE_VERSION="2.27.1"
 # install Docker
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
     echo \
