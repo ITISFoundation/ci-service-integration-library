@@ -4,17 +4,8 @@ LABEL maintainer="neagu@itis.swiss"
 LABEL org.opencontainers.image.authors="neagu@itis.swiss"
 LABEL org.opencontainers.image.source="https://github.com/ITISFoundation/ci-service-integration-library"
 LABEL org.opencontainers.image.licenses="MIT"
-
-ARG REPO_NAME="https://github.com/GitHK/osparc-simcore-forked.git"
-ARG BRANCH_NAME="pr-osparc-ooil-extensions"
-ARG COMMIT_SHA="6714998bd0e1c5f64b6ac0d4cba2df60e64e0185"
-ARG CLONE_DIR="/osparc"
-ARG PYTHON_VERSION="3.11.9"
 ARG DEBIAN_FRONTEND=noninteractive
-ARG DOCKER_COMPOSE_VERSION="1.29.2"
-ARG INSTALL_DIR="/package-install-dir"
-# NOTE: keep in sync with the version installed in the dynamic-sidecar
-ARG DOCKER_COMPOSE_VERSION="2.20.2"
+
 
 # Fixes issues with nvidia keys suddenly gone missing
 # TODO: check if can be removed
@@ -48,6 +39,8 @@ RUN apt-get update && \
     git \
     jq
 
+# NOTE: keep in sync with the version installed in the dynamic-sidecar
+ARG DOCKER_COMPOSE_VERSION="2.27.1"
 # install Docker
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
     echo \
@@ -69,6 +62,15 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /
 
 ENV PYENV_ROOT="/pyenv-root"
 ENV PATH=$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
+
+
+ARG REPO_NAME="https://github.com/itisfoundation/osparc-simcore.git"
+ARG BRANCH_NAME="master"
+ARG COMMIT_SHA="638b592daed098fafbb5b846a08f6391fcb8e6b1"
+ARG CLONE_DIR="/osparc"
+ARG PYTHON_VERSION="3.11.9"
+
+
 # Install pyenv
 RUN set -ex && \
     curl https://pyenv.run | bash && \
@@ -96,6 +98,7 @@ RUN git clone -n ${REPO_NAME} ${CLONE_DIR} && \
     ooil --version
 
 # Install this repo's tooling for managing and pushing images
+ARG INSTALL_DIR="/package-install-dir"
 COPY ./ ${INSTALL_DIR}
 RUN cd ${INSTALL_DIR} && \
     pip install . && \
