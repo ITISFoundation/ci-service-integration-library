@@ -66,7 +66,7 @@ ENV PATH=$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
 
 ARG REPO_NAME="https://github.com/itisfoundation/osparc-simcore.git"
 ARG BRANCH_NAME="master"
-ARG COMMIT_SHA="638b592daed098fafbb5b846a08f6391fcb8e6b1"
+ARG COMMIT_SHA="b1df292f23ec5d71266f4658ec1d0bcb937159d1"
 ARG CLONE_DIR="/osparc"
 ARG PYTHON_VERSION="3.11.9"
 
