@@ -62,12 +62,6 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /
 
 ENV PYENV_ROOT="/pyenv-root"
 ENV PATH=$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
-
-
-ARG REPO_NAME="https://github.com/itisfoundation/osparc-simcore.git"
-ARG BRANCH_NAME="master"
-ARG COMMIT_SHA="b1df292f23ec5d71266f4658ec1d0bcb937159d1"
-ARG CLONE_DIR="/osparc"
 ARG PYTHON_VERSION="3.11.9"
 
 
@@ -81,6 +75,11 @@ RUN set -ex && \
     pyenv rehash && \
     python --version
 RUN chmod 777 /pyenv-root
+
+ARG REPO_NAME="https://github.com/itisfoundation/osparc-simcore.git"
+ARG BRANCH_NAME="master"
+ARG COMMIT_SHA="c8bbdc26ee6d4f8ef2df744bed88874c59ca05e4"
+ARG CLONE_DIR="/osparc"
 
 # cloning and installing ooil
 RUN git clone -n ${REPO_NAME} ${CLONE_DIR} && \
