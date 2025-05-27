@@ -78,7 +78,7 @@ RUN chmod 777 /pyenv-root
 
 ARG REPO_NAME="https://github.com/itisfoundation/osparc-simcore.git"
 ARG BRANCH_NAME="master"
-ARG COMMIT_SHA="c8bbdc26ee6d4f8ef2df744bed88874c59ca05e4"
+ARG COMMIT_SHA="da1e85f03b76c7a51062652abfa3f842dcb33e0a"
 ARG CLONE_DIR="/osparc"
 
 # cloning and installing ooil
