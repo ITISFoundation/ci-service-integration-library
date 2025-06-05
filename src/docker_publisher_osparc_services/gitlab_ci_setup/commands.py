@@ -17,10 +17,10 @@ def get_commands_build_base(pre_docker_build_hooks: list[str]) -> CommandList:
     return [
         "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
         "cd ${SCCI_CLONE_DIR}",
+        DOCKER_LOGIN,
         "ooil compose",
         *pre_docker_build_hooks,
         "docker compose build",
-        DOCKER_LOGIN,
         "docker tag ${SCCI_IMAGE_NAME}:${SCCI_TAG} ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
         "docker push ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
     ]
