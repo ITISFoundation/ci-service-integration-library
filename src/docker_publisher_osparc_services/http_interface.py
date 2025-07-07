@@ -1,6 +1,5 @@
 from contextlib import asynccontextmanager
 from typing import Any, AsyncIterator, Dict, Optional, Set
-import logging
 
 from httpx import AsyncClient, codes
 from yarl import URL
@@ -8,8 +7,6 @@ from yarl import URL
 from .exceptions import CouldNotFindAGitlabRepositoryRepoException
 from .models import RegistryEndpointModel, RepoModel
 
-
-_logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def async_client(timeout: float = 30, **kwargs) -> AsyncIterator[AsyncClient]:
@@ -42,8 +39,7 @@ async def github_did_last_repo_run_pass(
             url = result.links.get("next", {}).get("url")
 
         if associated_run is None:
-            _logger.warning(f"Could not find associated run to commit {branch_hash}")
-            return False
+            raise Exception(f"Could not find associated run to commit {branch_hash}")
 
         return (
             associated_run["status"] == "completed"
