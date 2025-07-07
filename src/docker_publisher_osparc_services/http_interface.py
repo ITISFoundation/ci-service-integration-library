@@ -39,7 +39,14 @@ async def github_did_last_repo_run_pass(
             url = result.links.get("next", {}).get("url")
 
         if associated_run is None:
-            raise Exception(f"Could not find associated run to commit {branch_hash}")
+            msg = (
+                f"Could not find associated run to commit {branch_hash}. "
+                "TIP: Most likely this happened befause the following repo "
+                "does not have a passing green CI run in it's main/master "
+                "brach. Try to commit an empty line in the readme of the "
+                f"{repo_model.repo} and this should fix the issue."
+            )
+            raise Exception(msg)
 
         return (
             associated_run["status"] == "completed"
