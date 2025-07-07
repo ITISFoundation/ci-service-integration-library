@@ -44,7 +44,7 @@ async def github_did_last_repo_run_pass(
                 "TIP: Most likely this happened befause the following repo "
                 "does not have a passing green CI run in it's main/master "
                 "brach. Try to commit an empty line in the readme of the "
-                f"{repo_model.repo} and this should fix the issue."
+                f"{repo_model.http_url_to_repo} and this should fix the issue."
             )
             raise Exception(msg)
 
