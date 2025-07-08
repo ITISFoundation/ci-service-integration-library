@@ -14,6 +14,14 @@ async def async_client(timeout: float = 30, **kwargs) -> AsyncIterator[AsyncClie
         yield client
 
 
+class GreenCIMissingError(Exception):
+    def __init__(self, *, repo_url: str, target_brach: str, branch_hash: str):
+        super().__init__(
+            f"Could not find a green CI run for {target_brach=} hash '{branch_hash}' in repository: {repo_url}. "
+            "Please ensure that the repository has a passing CI run in its main"
+        )
+
+
 async def github_did_last_repo_run_pass(
     repo_model: RepoModel, branch_hash: str
 ) -> bool:
@@ -29,7 +37,10 @@ async def github_did_last_repo_run_pass(
             runs = result.json()
 
             for run in runs["workflow_runs"]:
-                if run["head_commit"]["id"] == branch_hash:
+                if (
+                    run["head_commit"]["id"] == branch_hash
+                    and run["head_branch"] == repo_model.branch
+                ):
                     associated_run = run
                     break
 
@@ -39,14 +50,11 @@ async def github_did_last_repo_run_pass(
             url = result.links.get("next", {}).get("url")
 
         if associated_run is None:
-            msg = (
-                f"Could not find associated run to commit {branch_hash}. "
-                "TIP: Most likely this happened befause the following repo "
-                "does not have a passing green CI run in it's main/master "
-                "brach. Try to commit an empty line in the readme of the "
-                f"{repo_model.http_url_to_repo} and this should fix the issue."
+            raise GreenCIMissingError(
+                repo_url=repo_model.http_url_to_repo,
+                target_brach=repo_model.branch,
+                branch_hash=branch_hash,
             )
-            raise Exception(msg)
 
         return (
             associated_run["status"] == "completed"
