@@ -40,6 +40,7 @@ async def github_did_last_repo_run_pass(
                 if (
                     run["head_commit"]["id"] == branch_hash
                     and run["head_branch"] == repo_model.branch
+                    and run["status"] == "completed"
                 ):
                     associated_run = run
                     break
