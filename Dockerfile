@@ -1,16 +1,9 @@
-FROM nvidia/cudagl:10.2-runtime-ubuntu18.04
+FROM ubuntu:24.04
 
 LABEL maintainer="neagu@itis.swiss"
 LABEL org.opencontainers.image.authors="neagu@itis.swiss"
 LABEL org.opencontainers.image.source="https://github.com/ITISFoundation/ci-service-integration-library"
 LABEL org.opencontainers.image.licenses="MIT"
-ARG DEBIAN_FRONTEND=noninteractive
-
-
-# Fixes issues with nvidia keys suddenly gone missing
-# TODO: check if can be removed
-RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub 18
-RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
 
 #Set of all dependencies needed for pyenv to work on Ubuntu
 RUN apt-get update && \
@@ -40,17 +33,20 @@ RUN apt-get update && \
     jq
 
 # NOTE: keep in sync with the version installed in the dynamic-sidecar
-ARG DOCKER_COMPOSE_VERSION="2.27.1"
+ARG DOCKER_COMPOSE_VERSION="2.38.2"
+ARG UBUNTU_DOCKER_VERSION=5:28.3.1-1~ubuntu.24.04~noble
 # install Docker
-RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
+RUN apt-get update && \
+    apt-get install ca-certificates curl && \
+    install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc && \
+    chmod a+r /etc/apt/keyrings/docker.asc && \
     echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-    $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+    $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+    tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && \
-    apt-get install -y --no-install-recommends \
-    docker-ce \
-    containerd.io \
-    docker-ce-cli && \
+    apt-get install -y docker-ce=$UBUNTU_DOCKER_VERSION docker-ce-cli=$UBUNTU_DOCKER_VERSION containerd.io docker-buildx-plugin && \
     mkdir -p /usr/local/lib/docker/cli-plugins && \
     curl -SL https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose && \
     chmod +x /usr/local/lib/docker/cli-plugins/docker-compose && \
