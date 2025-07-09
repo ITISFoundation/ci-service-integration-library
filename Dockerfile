@@ -33,8 +33,7 @@ RUN apt-get update && \
     jq
 
 # NOTE: keep in sync with the version installed in the dynamic-sidecar
-ARG DOCKER_COMPOSE_VERSION="2.38.2"
-ARG UBUNTU_DOCKER_VERSION=5:28.3.1-1~ubuntu.24.04~noble
+ARG UBUNTU_DOCKER_VERSION=5:28.3.0-1~ubuntu.24.04~noble
 # install Docker
 RUN apt-get update && \
     apt-get install ca-certificates curl && \
@@ -47,9 +46,6 @@ RUN apt-get update && \
     tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && \
     apt-get install -y docker-ce=$UBUNTU_DOCKER_VERSION docker-ce-cli=$UBUNTU_DOCKER_VERSION containerd.io docker-buildx-plugin && \
-    mkdir -p /usr/local/lib/docker/cli-plugins && \
-    curl -SL https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose && \
-    chmod +x /usr/local/lib/docker/cli-plugins/docker-compose && \
     docker --version && \
     docker compose version
 
