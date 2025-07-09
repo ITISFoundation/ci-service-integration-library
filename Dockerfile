@@ -33,7 +33,7 @@ RUN apt-get update && \
     jq
 
 # NOTE: keep in sync with the version installed in the dynamic-sidecar
-ARG UBUNTU_DOCKER_VERSION=5:28.1.0-1~ubuntu.24.04~noble
+ARG UBUNTU_DOCKER_VERSION=5:28.0.4-1~ubuntu.24.04~noble
 # install Docker
 RUN apt-get update && \
     apt-get install ca-certificates curl && \
