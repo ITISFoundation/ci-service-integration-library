@@ -18,6 +18,7 @@ def get_commands_build_base(pre_docker_build_hooks: list[str]) -> CommandList:
         "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
         "cd ${SCCI_CLONE_DIR}",
         DOCKER_LOGIN,
+        "ooil legacy-escape", 
         "ooil compose",
         *pre_docker_build_hooks,
         "docker compose build",
