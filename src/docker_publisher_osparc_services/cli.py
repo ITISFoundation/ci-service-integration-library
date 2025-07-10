@@ -124,6 +124,12 @@ async def run_command(config: Path, legacy_escape: bool) -> None:
 @click.command()
 @click.version_option(version=__version__)
 @click.argument("config", type=Path)
+@click.option(
+    "--legacy-escape",
+    is_flag=True,
+    default=False,
+    help="Enable legacy escape for ooil commands.",
+)
 def main(config: Path, legacy_escape: bool = False) -> None:
     """Interface to be used in CI"""
     asyncio.get_event_loop().run_until_complete(run_command(config, legacy_escape))
