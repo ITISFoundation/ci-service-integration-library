@@ -27,7 +27,7 @@ async def github_did_last_repo_run_pass(
 ) -> bool:
     async with async_client() as client:
         repo_path = repo_model.repo.split("github.com/")[1].replace(".git", "")
-        url = f"https://api.github.com/repos/{repo_path}/actions/runs"
+        url = f"https://api.github.com/repos/{repo_path}/actions/runs?branch={repo_model.branch}"
         headers = {"Authorization": f"Bearer {repo_model.github.github_token}"}
         params = {"per_page": "10"}
         associated_run: Optional[Dict[str, Any]] = None
