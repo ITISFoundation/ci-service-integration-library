@@ -36,7 +36,7 @@ async def github_did_last_repo_run_pass(
             result = await client.get(url, params=params, headers=headers)
             runs = result.json()
 
-            for run in runs["workflow_runs"]:
+            for run in runs.get("workflow_runs", []):
                 if (
                     run["head_commit"]["id"] == branch_hash
                     and run["head_branch"] == repo_model.branch
