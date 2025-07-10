@@ -23,7 +23,7 @@ from .operations import (
 )
 
 
-async def run_command(config: Path) -> None:
+async def run_command(config: Path, legacy_escape: bool) -> None:
     cfg = ConfigModel.from_cfg_path(config)
     print(cfg)
 
@@ -87,7 +87,7 @@ async def run_command(config: Path) -> None:
                     )
 
                     build_commands = get_commands_build_base(
-                        repo_model.pre_docker_build_hooks
+                        repo_model.pre_docker_build_hooks, legacy_escape
                     )
                     validate_commands_list(build_commands, env_vars)
 
@@ -124,9 +124,9 @@ async def run_command(config: Path) -> None:
 @click.command()
 @click.version_option(version=__version__)
 @click.argument("config", type=Path)
-def main(config: Path):
+def main(config: Path, legacy_escape: bool = False) -> None:
     """Interface to be used in CI"""
-    asyncio.get_event_loop().run_until_complete(run_command(config))
+    asyncio.get_event_loop().run_until_complete(run_command(config, legacy_escape))
 
 
 if __name__ == "__main__":

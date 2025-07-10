@@ -13,18 +13,26 @@ DOCKER_LOGIN: str = (
 CommandList = List[str]
 
 
-def get_commands_build_base(pre_docker_build_hooks: list[str]) -> CommandList:
-    return [
-        "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
-        "cd ${SCCI_CLONE_DIR}",
-        DOCKER_LOGIN,
-        "ooil legacy-escape", 
-        "ooil compose",
-        *pre_docker_build_hooks,
-        "docker compose build",
-        "docker tag ${SCCI_IMAGE_NAME}:${SCCI_TAG} ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
-        "docker push ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
-    ]
+def get_commands_build_base(
+    pre_docker_build_hooks: list[str], legacy_escape: bool
+) -> CommandList:
+    return (
+        [
+            "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
+            "cd ${SCCI_CLONE_DIR}",
+            DOCKER_LOGIN,
+        ]
+        + ["ooil legacy-escape"]
+        if legacy_escape
+        else []
+        + [
+            "ooil compose",
+            *pre_docker_build_hooks,
+            "docker compose build",
+            "docker tag ${SCCI_IMAGE_NAME}:${SCCI_TAG} ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
+            "docker push ${SCCI_TARGET_REGISTRY_ADDRESS}/${SCCI_TEST_IMAGE}:${SCCI_TAG}",
+        ]
+    )
 
 
 def get_commands_test_base() -> CommandList:
