@@ -41,6 +41,7 @@ async def github_did_last_repo_run_pass(
                     run["head_commit"]["id"] == branch_hash
                     and run["head_branch"] == repo_model.branch
                     and run["status"] == "completed"
+                    and run["conclusion"] == "success"
                 ):
                     associated_run = run
                     break
@@ -57,10 +58,7 @@ async def github_did_last_repo_run_pass(
                 branch_hash=branch_hash,
             )
 
-        return (
-            associated_run["status"] == "completed"
-            and associated_run["conclusion"] == "success"
-        )
+        return True
 
 
 async def _gitlab_get_project_id(repo_model: RepoModel) -> str:
