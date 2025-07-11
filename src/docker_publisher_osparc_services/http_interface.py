@@ -33,10 +33,8 @@ async def github_did_last_repo_run_pass(
         associated_run: Optional[Dict[str, Any]] = None
 
         while url:
-            print("Rquesting", url, params)
             result = await client.get(url, params=params, headers=headers)
             runs = result.json()
-            print("Runs:", runs)
 
             for run in runs.get("workflow_runs", []):
                 if (
