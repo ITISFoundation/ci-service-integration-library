@@ -22,9 +22,7 @@ def get_commands_build_base(
             "cd ${SCCI_CLONE_DIR}",
             DOCKER_LOGIN,
         ]
-        + ["ooil legacy-escape"]
-        if legacy_escape
-        else []
+        + (["ooil legacy-escape"] if legacy_escape else [])
         + [
             "ooil compose",
             *pre_docker_build_hooks,
