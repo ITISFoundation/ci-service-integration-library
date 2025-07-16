@@ -68,9 +68,9 @@ RUN set -ex && \
     python --version
 RUN chmod 777 /pyenv-root
 
-ARG REPO_NAME="https://github.com/ITISFoundation/osparc-simcore.git"
-ARG BRANCH_NAME="pr-osparc-upgrade-ooil"
-ARG COMMIT_SHA="415442ce771b00383bfaf746ccd287fdd2a992eb"
+ARG REPO_NAME="https://github.com/GitHK/osparc-simcore-forked.git"
+ARG BRANCH_NAME="pr-osparc-ooil-escape-additional-env-vars"
+ARG COMMIT_SHA="66a231a95b9e63e6cd5f63e596a13b6e59aacafb"
 ARG CLONE_DIR="/osparc"
 
 # cloning and installing ooil
