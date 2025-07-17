@@ -70,10 +70,11 @@ RUN chmod 777 /pyenv-root
 
 ARG REPO_NAME="https://github.com/GitHK/osparc-simcore-forked.git"
 ARG BRANCH_NAME="pr-osparc-ooil-escape-additional-env-vars"
-ARG COMMIT_SHA="66a231a95b9e63e6cd5f63e596a13b6e59aacafb"
+ARG COMMIT_SHA="2dc3eb97c24435c08438e939a95f1da1a9b7839b"
 ARG CLONE_DIR="/osparc"
 
-# cloning and installing ooil
+# ooil installation
+ENV ENABLE_OOIL_OSPARC_VARIABLE_IDENTIFIER=1
 RUN git clone -n ${REPO_NAME} ${CLONE_DIR} && \
     cd ${CLONE_DIR} && \
     git checkout -B ${BRANCH_NAME} ${COMMIT_SHA} && \
