@@ -25,7 +25,9 @@ async def get_branch_hash(repo_model: RepoModel) -> str:
 async def clone_repo(repo_model: RepoModel) -> None:
     """clones and stores the cloned_dir"""
     target_dir: Path = Path(TemporaryDirectory().name)
-    await command_output(f"git clone {repo_model.escaped_repo} {target_dir}")
+    await command_output(
+        f"git clone --single-branch --branch {repo_model.branch} {repo_model.escaped_repo} {target_dir}"
+    )
     repo_model.clone_path = target_dir
 
 
