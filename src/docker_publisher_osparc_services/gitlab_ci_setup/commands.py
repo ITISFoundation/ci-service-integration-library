@@ -18,7 +18,7 @@ def get_commands_build_base(
 ) -> CommandList:
     return (
         [
-            "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
+            "git clone --single-branch --branch ${SCCI_BRANCH} ${SCCI_REPO} ${SCCI_CLONE_DIR}",
             "cd ${SCCI_CLONE_DIR}",
             DOCKER_LOGIN,
         ]
@@ -35,7 +35,7 @@ def get_commands_build_base(
 
 def get_commands_test_base() -> CommandList:
     return [
-        "git clone ${SCCI_REPO} ${SCCI_CLONE_DIR}",
+        "git clone --single-branch --branch ${SCCI_BRANCH} ${SCCI_REPO} ${SCCI_CLONE_DIR}",
         "cd ${SCCI_CLONE_DIR}",
         DOCKER_LOGIN,
         "docker pull ${SCCI_CI_IMAGE_NAME}:${SCCI_TAG}",
@@ -65,6 +65,7 @@ def assemble_env_vars(
     release_image = repo_model.registry.test_to_release[test_image]
 
     return {
+        "SCCI_BRANCH": repo_model.branch,
         "SCCI_REPO": repo_model.escaped_repo,
         "SCCI_CLONE_DIR": f"{clone_directory}",
         "SCCI_IMAGE_NAME": image_name,
