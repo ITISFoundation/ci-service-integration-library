@@ -27,3 +27,11 @@ class IncorrectImageMapping(BaseAppException):
 
 class CommandFailedException(BaseAppException):
     """raised if a command fails"""
+
+
+class GitlabRequestUnexpectedStatusCodeError(BaseAppException):
+    """raised if a gitlab request fails"""
+
+
+    def __init__(self, requested_url: str, response: str) -> None:
+        super().__init__(f"GitLab API request '{requested_url}' failed with: {response}")

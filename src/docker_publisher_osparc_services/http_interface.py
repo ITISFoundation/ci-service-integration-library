@@ -4,7 +4,10 @@ from typing import Any, AsyncIterator, Dict, Optional, Set
 from httpx import AsyncClient, codes
 from yarl import URL
 
-from .exceptions import CouldNotFindAGitlabRepositoryRepoException
+from .exceptions import (
+    CouldNotFindAGitlabRepositoryRepoException,
+    GitlabRequestUnexpectedStatusCodeError,
+)
 from .models import RegistryEndpointModel, RepoModel
 
 
@@ -73,6 +76,9 @@ async def _gitlab_get_project_id(repo_model: RepoModel) -> str:
                 "PRIVATE-TOKEN": repo_model.gitlab.personal_access_token.get_secret_value()
             },
         )
+        if result.status_code != 200:
+            raise GitlabRequestUnexpectedStatusCodeError(url, result.text)
+
         found_repos = result.json()
         # check for http_url_to_repo
         for repo in found_repos:
@@ -98,6 +104,9 @@ async def gitlab_did_last_repo_run_pass(
                 "PRIVATE-TOKEN": repo_model.gitlab.personal_access_token.get_secret_value()
             },
         )
+        if result.status_code != 200:
+            raise GitlabRequestUnexpectedStatusCodeError(url, result.text)
+
         found_pipelines = result.json()
 
         # scan for the biggest pipeline id (most recent run)
