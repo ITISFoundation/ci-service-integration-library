@@ -12,6 +12,9 @@ LABEL org.opencontainers.image.authors="neagu@itis.swiss"
 LABEL org.opencontainers.image.source="https://github.com/ITISFoundation/ci-service-integration-library"
 LABEL org.opencontainers.image.licenses="MIT"
 
+# for docker apt caching to work this needs to be added: [https://vsupalov.com/buildkit-cache-mount-dockerfile/]
+RUN rm -f /etc/apt/apt.conf.d/docker-clean && \
+    echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
 
 # Sets utf-8 encoding for Python et al
 ENV LANG=C.UTF-8
@@ -38,16 +41,16 @@ FROM base AS ooil-installer
 
 
 ARG OSPARC_SIMCORE_REPO_URL="https://github.com/ITISFoundation/osparc-simcore"
-ARG COMMIT_SHA="acb9f05531601fc71871197d8e855b9402d1b8ec"
+ARG COMMIT_SHA="master"
 
 
 # install ooil we need git to install from git repos
-RUN --mount=type=cache,target=/var/cache/apt,sharing=private \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
     set -eux \
     && apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+    git
 
 
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -68,8 +71,10 @@ COPY --from=ooil-installer  ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 # ooil special ENV
 ENV ENABLE_OOIL_OSPARC_VARIABLE_IDENTIFIER=1
 
+
 # install docker
-RUN --mount=type=cache,target=/var/cache/apt,sharing=private \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
     set -eux \
     && apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
@@ -84,8 +89,15 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=private \
     && apt-get install -y --no-install-recommends \
     docker-ce-cli \
     docker-compose-plugin \
-    && apt-get remove -y curl \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get remove -y curl
+
+# install required depenendencies
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    set -eux \
+    && apt-get update \
+    && apt-get install --assume-yes --no-install-recommends \
+    jq
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=.,target=/src/,rw \
