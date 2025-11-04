@@ -28,18 +28,16 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # those from our virtualenv.
 ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
 
-# install UV https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
-COPY --from=uv_build /uv /uvx /bin/
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy
 ENV PATH=/root/.local/bin:$PATH
 
 # NOTE: python virtualenv is used here such that installed
 # packages may be moved to production image easily by copying the venv
-RUN uv venv "${VIRTUAL_ENV}"
+RUN --mount=from=uv_build,source=/uv,target=/bin/uv \
+    uv venv "${VIRTUAL_ENV}"
 
 FROM base AS ooil-installer
-
 
 ARG OSPARC_SIMCORE_REPO_URL="https://github.com/ITISFoundation/osparc-simcore"
 ARG COMMIT_SHA="de246e2c2ea177b5a05433e257f411a91f3db197"
@@ -54,7 +52,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     git
 
 
-RUN --mount=type=cache,target=/root/.cache/uv \
+RUN --mount=from=uv_build,source=/uv,target=/bin/uv \
+    --mount=type=cache,target=/root/.cache/uv \
     uv pip install \
     git+${OSPARC_SIMCORE_REPO_URL}@${COMMIT_SHA}#subdirectory=packages/service-integration \
     git+${OSPARC_SIMCORE_REPO_URL}@${COMMIT_SHA}#subdirectory=packages/models-library \
@@ -102,7 +101,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     jq
 
 # install dpos
-RUN --mount=type=cache,target=/root/.cache/uv \
+RUN --mount=from=uv_build,source=/uv,target=/bin/uv \
+    --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=.,target=/src/,rw \
     uv pip install \
     /src/ \
