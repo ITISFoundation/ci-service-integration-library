@@ -1,7 +1,6 @@
 SHELL = /bin/sh
 .DEFAULT_GOAL := help
 
-include .env
 IMAGE_NAME := itisfoundation/ci-service-integration-library
 
 .PHONY: help
