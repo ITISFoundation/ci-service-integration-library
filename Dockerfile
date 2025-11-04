@@ -3,7 +3,8 @@
 # Define arguments in the global scope
 ARG PYTHON_VERSION="3.11.9"
 ARG UV_VERSION="0.9"
-ARG UBUNTU_VERSION="24.04"
+ARG DEBIAN_DOCKER_VERSION=5:28.5.1-1~debian.12~bookworm
+ARG DEBIAN_DOCKER_COMPOSE_VERSION=2.40.3-1~debian.12~bookworm
 FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv_build
 
 FROM python:${PYTHON_VERSION}-slim-bookworm AS base
@@ -41,7 +42,7 @@ FROM base AS ooil-installer
 
 
 ARG OSPARC_SIMCORE_REPO_URL="https://github.com/ITISFoundation/osparc-simcore"
-ARG COMMIT_SHA="master"
+ARG COMMIT_SHA="de246e2c2ea177b5a05433e257f411a91f3db197"
 
 
 # install ooil we need git to install from git repos
@@ -64,13 +65,14 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 
 FROM base AS runtime
+ARG DEBIAN_DOCKER_VERSION
+ARG DEBIAN_DOCKER_COMPOSE_VERSION
 
-# Starting from clean base image, copies pre-installed virtualenv from prod-only-deps
+# Copy ooil virtual environment from installer stage
 COPY --from=ooil-installer  ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
-# ooil special ENV
+# ooil special ENV for $$$$ variable substitution in osparc services
 ENV ENABLE_OOIL_OSPARC_VARIABLE_IDENTIFIER=1
-
 
 # install docker
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -87,11 +89,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && printf "Types: deb\nURIs: https://download.docker.com/linux/debian\nSuites: %s\nComponents: stable\nSigned-By: /etc/apt/keyrings/docker.asc\n" "$VERSION_CODENAME" > /etc/apt/sources.list.d/docker.sources \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
-    docker-ce-cli \
-    docker-compose-plugin \
+    docker-ce-cli=${DEBIAN_DOCKER_VERSION} \
+    docker-compose-plugin=${DEBIAN_DOCKER_COMPOSE_VERSION} \
     && apt-get remove -y curl
 
-# install required depenendencies
+# install required depenendencies it seems we need jq??
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     set -eux \
@@ -99,6 +101,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && apt-get install --assume-yes --no-install-recommends \
     jq
 
+# install dpos
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=.,target=/src/,rw \
     uv pip install \
