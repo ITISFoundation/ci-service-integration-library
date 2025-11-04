@@ -98,6 +98,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     set -eux \
     && apt-get update \
     && apt-get install --assume-yes --no-install-recommends \
+    git \
     jq
 
 # install dpos
