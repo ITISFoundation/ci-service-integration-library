@@ -1,8 +1,10 @@
 SHELL = /bin/sh
 .DEFAULT_GOAL := help
 
-include .env
 IMAGE_NAME := itisfoundation/ci-service-integration-library
+
+
+
 
 .PHONY: help
 help: ## this colorful help
@@ -15,28 +17,34 @@ help: ## this colorful help
 .PHONY: update-requirements
 update-requirements: ## upgrades requirements.txt
 	# freezes requirements
-	pip-compile --upgrade --build-isolation --output-file requirements/_base.txt requirements/_base.in
-	pip-compile --upgrade --build-isolation --output-file requirements/_test.txt requirements/_test.in
-	pip-compile --upgrade --build-isolation --output-file requirements/_tools.txt requirements/_tools.in
+	uv pip compile --upgrade --build-isolation --output-file requirements/_base.txt requirements/_base.in
+	uv pip compile --upgrade --build-isolation --output-file requirements/_test.txt requirements/_test.in
+	uv pip compile --upgrade --build-isolation --output-file requirements/_tools.txt requirements/_tools.in
+
+.check-uv-installed:
+	@echo "Checking if 'uv' is installed..."
+	@if ! command -v uv >/dev/null 2>&1; then \
+			curl -LsSf https://astral.sh/uv/install.sh | sh; \
+	else \
+			printf "\033[32m'uv' is installed. Version: \033[0m"; \
+			uv --version; \
+	fi
+	# upgrading uv
+	-@uv self --quiet update
 
 .PHONY: devenv
-.venv:
-	python3 -m venv $@
-	# upgrading package managers
-	$@/bin/pip3 install --upgrade \
-		pip \
-		wheel \
-		setuptools
-	# tooling
-	$@/bin/pip3 install pip-tools
+.venv: .check-uv-installed
+	@uv venv $@
+	@echo "# upgrading tools to latest version in" && $@/bin/python --version
+	@uv pip list
 
 
 devenv: .venv ## create a python virtual environment with tools to dev, run and tests cookie-cutter
 	# installing tooling and this package in editable mode
-	pip-sync requirements/_tools.txt
-	pip install -e .
+	uv pip sync requirements/_tools.txt
+	uv pip install --editable .
 	# your dev environment contains
-	@$</bin/pip3 list
+	@uv pip list
 	@echo "To activate the virtual environment, run 'source $</bin/activate'"
 
 .PHONY: .env-make
@@ -105,6 +113,7 @@ test-installs:	## checks all required commands are present
 	docker run -it --rm -u $(shell id -u):$(shell id -g) -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} jq --version
 	docker run -it --rm -u $(shell id -u):$(shell id -g) -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} yq --version
 	docker run -it --rm -u $(shell id -u):$(shell id -g) -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} bump2version --help
+	docker run -it --rm -u $(shell id -u):$(shell id -g) -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE_NAME} git --version
 
 
 .PHONY: new-release

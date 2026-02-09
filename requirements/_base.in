@@ -1,9 +1,9 @@
 --constraint constraints.txt
 
+bump2version
 click
 envyaml
 httpx
 pydantic
 yarl
 yq
-bump2version

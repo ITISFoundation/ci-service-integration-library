@@ -1,3 +1,6 @@
-import pkg_resources
+from importlib.metadata import version, PackageNotFoundError
 
-__version__ = pkg_resources.get_distribution("docker-publisher-osparc-services").version
+try:
+    __version__ = version("docker-publisher-osparc-services")
+except PackageNotFoundError:
+    __version__ = "unknown"
