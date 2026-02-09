@@ -49,12 +49,9 @@ class PipelineWriter:
 
             no-further-action-required:
                 image: $CI_SERVICE_INTEGRATION_LIBRARY
-                tags:
                 stage: info
                 tags:
                     - DOCKER
-                    - XSERVER
-                    - GPU
                     - LINUX
                 script:
                     - echo "Nothing required updates. No builds scheduled."
@@ -74,8 +71,6 @@ class PipelineWriter:
                 image: $CI_SERVICE_INTEGRATION_LIBRARY
                 tags:
                     - DOCKER
-                    - XSERVER
-                    - GPU
                     - LINUX
             """
         )
