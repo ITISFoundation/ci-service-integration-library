@@ -3,8 +3,8 @@
 # Define arguments in the global scope
 ARG PYTHON_VERSION="3.11.9"
 ARG UV_VERSION="0.9"
-ARG DEBIAN_DOCKER_VERSION=5:28.5.1-1~debian.12~bookworm
-ARG DEBIAN_DOCKER_COMPOSE_VERSION=2.40.3-1~debian.12~bookworm
+ARG DEBIAN_DOCKER_VERSION=5:29.2.1-1~debian.12~bookworm
+ARG DEBIAN_DOCKER_COMPOSE_VERSION=5.0.2-1~debian.12~bookworm
 FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv_build
 
 FROM python:${PYTHON_VERSION}-slim-bookworm AS base
