@@ -88,8 +88,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && printf "Types: deb\nURIs: https://download.docker.com/linux/debian\nSuites: %s\nComponents: stable\nSigned-By: /etc/apt/keyrings/docker.asc\n" "$VERSION_CODENAME" > /etc/apt/sources.list.d/docker.sources \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
+    docker-ce=${DEBIAN_DOCKER_VERSION} \
     docker-ce-cli=${DEBIAN_DOCKER_VERSION} \
     docker-compose-plugin=${DEBIAN_DOCKER_COMPOSE_VERSION} \
+    containerd.io \
+    docker-buildx-plugin \
     && apt-get remove -y curl
 
 # install required depenendencies it seems we need jq??
