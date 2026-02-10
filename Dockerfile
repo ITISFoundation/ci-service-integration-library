@@ -4,7 +4,6 @@
 ARG PYTHON_VERSION="3.11.9"
 ARG UV_VERSION="0.9"
 ARG DEBIAN_DOCKER_VERSION=5:29.2.1-1~debian.12~bookworm
-ARG DEBIAN_DOCKER_COMPOSE_VERSION=5.0.2-1~debian.12~bookworm
 FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv_build
 
 FROM python:${PYTHON_VERSION}-slim-bookworm AS base
@@ -65,7 +64,6 @@ RUN --mount=from=uv_build,source=/uv,target=/bin/uv \
 
 FROM base AS runtime
 ARG DEBIAN_DOCKER_VERSION
-ARG DEBIAN_DOCKER_COMPOSE_VERSION
 
 # Copy ooil virtual environment from installer stage
 COPY --from=ooil-installer  ${VIRTUAL_ENV} ${VIRTUAL_ENV}
@@ -90,9 +88,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && apt-get install -y --no-install-recommends \
     docker-ce=${DEBIAN_DOCKER_VERSION} \
     docker-ce-cli=${DEBIAN_DOCKER_VERSION} \
-    docker-compose-plugin=${DEBIAN_DOCKER_COMPOSE_VERSION} \
     containerd.io \
     docker-buildx-plugin \
+    docker-compose-plugin \
     && apt-get remove -y curl
 
 # install required depenendencies it seems we need jq??
