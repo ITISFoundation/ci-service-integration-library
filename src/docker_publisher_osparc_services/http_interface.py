@@ -118,6 +118,27 @@ async def gitlab_did_last_repo_run_pass(
         return latest_run["status"] == "success"
 
 
+def _safe_json(response, *, request_url: str) -> Dict[str, Any]:
+    if response.status_code != codes.OK:
+        print(
+            f"[WARNING] Request to {request_url!r} failed: "
+            f"status_code={response.status_code}, "
+            f"content-type={response.headers.get('content-type')!r}, "
+            f"response body: {response.text!r}"
+        )
+        return {}
+    try:
+        return response.json()
+    except ValueError:
+        print(
+            f"[WARNING] Failed to decode JSON response from {request_url!r}: "
+            f"status_code={response.status_code}, "
+            f"content-type={response.headers.get('content-type')!r}, "
+            f"response body: {response.text!r}"
+        )
+        return {}
+
+
 async def _registry_request(
     registry_model: RegistryEndpointModel, url_path: str
 ) -> Dict[str, Any]:
@@ -138,24 +159,23 @@ async def _registry_request(
             realm = token_params["realm"]
             scope = token_params["scope"]
             service = token_params["service"]
-            token_result = await client.get(
-                f"{realm}?service={service}&scope={scope}", auth=auth
-            )
-            assert token_result.status_code == codes.OK
+            token_url = f"{realm}?service={service}&scope={scope}"
+            token_result = await client.get(token_url, auth=auth)
+            token_data = _safe_json(token_result, request_url=token_url)
+            if "token" not in token_data:
+                raise RuntimeError(
+                    f"Failed to obtain bearer token from {token_url!r}: "
+                    f"status_code={token_result.status_code}, "
+                    f"response body: {token_result.text!r}"
+                )
 
-            token = token_result.json()["token"]
+            token = token_data["token"]
             auth_headers = {"Authorization": f"Bearer {token}"}
 
             auth_result = await client.get(url, headers=auth_headers)
-            if auth_result.status_code != codes.OK:
-                print(f"[WARNING] auth request: {auth_result.text}")
-                return {}
-            return auth_result.json()
+            return _safe_json(auth_result, request_url=url)
         else:
-            if result.status_code != codes.OK:
-                print(f"[WARNING] request: {result.text}")
-                return {}
-            return result.json()
+            return _safe_json(result, request_url=url)
 
 
 async def get_tags_for_repo(
