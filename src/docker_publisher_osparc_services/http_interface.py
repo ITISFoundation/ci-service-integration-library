@@ -1,6 +1,6 @@
-import json
+import httpx
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator, Dict, Optional, Set
+from typing import Any, AsyncIterator, Dict, Mapping, Optional, Set, Tuple
 
 from httpx import AsyncClient, Response, codes
 from tenacity import (
@@ -15,6 +15,8 @@ from .exceptions import (
     CouldNotFindAGitlabRepositoryRepoException,
     GitlabRequestUnexpectedStatusCodeError,
     GitlabRequestUnparseableJsonError,
+    RegistryRequestUnexpectedStatusCodeError,
+    RegistryRequestUnparseableJsonError,
 )
 from .models import RegistryEndpointModel, RepoModel
 
@@ -92,7 +94,7 @@ async def _gitlab_request(
             )
         try:
             return result.json()
-        except (json.JSONDecodeError, ValueError) as exc:
+        except ValueError as exc:
             raise GitlabRequestUnparseableJsonError(
                 url,
                 result.status_code,
@@ -144,25 +146,45 @@ async def gitlab_did_last_repo_run_pass(
     return latest_run["status"] == "success"
 
 
-def _safe_json(response, *, request_url: str) -> Dict[str, Any]:
-    if response.status_code != codes.OK:
-        print(
-            f"[WARNING] Request to {request_url!r} failed: "
-            f"status_code={response.status_code}, "
-            f"content-type={response.headers.get('content-type')!r}, "
-            f"response body: {response.text!r}"
+
+
+@retry(
+    retry=retry_if_exception_type((
+        httpx.TransportError,
+        RegistryRequestUnexpectedStatusCodeError,
+        RegistryRequestUnparseableJsonError,
+    )),
+    wait=wait_exponential(multiplier=1, min=1, max=30),
+    stop=stop_after_attempt(5),
+    reraise=True,
+)
+async def _registry_raw_get(
+    url: str,
+    *,
+    client: AsyncClient,
+    auth=None,
+    headers=None,
+    acceptable_statuses: Set[int]
+) -> Tuple[Optional[Any], Mapping[str, str]]:
+    result: Response = await client.get(url, auth=auth, headers=headers)
+    if result.status_code not in acceptable_statuses:
+        raise RegistryRequestUnexpectedStatusCodeError(
+            url,
+            result.status_code,
+            result.text,
         )
-        return {}
+    # don't attempt JSON parsing for non-OK responses (e.g. 401 Portus auth)
+    if result.status_code != codes.OK:
+        return None, result.headers
     try:
-        return response.json()
-    except ValueError:
-        print(
-            f"[WARNING] Failed to decode JSON response from {request_url!r}: "
-            f"status_code={response.status_code}, "
-            f"content-type={response.headers.get('content-type')!r}, "
-            f"response body: {response.text!r}"
-        )
-        return {}
+        return result.json(), result.headers
+    except ValueError as exc:
+        raise RegistryRequestUnparseableJsonError(
+            url,
+            result.status_code,
+            result.headers.get("content-type", ""),
+            result.text,
+        ) from exc
 
 
 async def _registry_request(
@@ -171,43 +193,57 @@ async def _registry_request(
     auth = (registry_model.user, registry_model.password.get_secret_value())
     async with async_client() as client:
         url = f"https://{registry_model.address}{url_path}"
-        result = await client.get(url, auth=auth)
+        body, response_headers = await _registry_raw_get(
+            url, client=client, auth=auth, acceptable_statuses={200, 401}
+        )
 
         # in case of connection to Portus registry
-        if "www-authenticate" in result.headers:
-            www_authenticate = result.headers["www-authenticate"]
+        if body is None and "www-authenticate" in response_headers:
+            www_authenticate = response_headers["www-authenticate"]
 
             bearer, params = www_authenticate.split(" ")
             assert bearer == "Bearer"
             token_params = {
-                k: v.strip('"') for k, v in [x.split("=") for x in params.split(",")]
+                k: v.strip('"')
+                for k, v in [x.split("=") for x in params.split(",")]
             }
             realm = token_params["realm"]
             scope = token_params["scope"]
             service = token_params["service"]
             token_url = f"{realm}?service={service}&scope={scope}"
-            token_result = await client.get(token_url, auth=auth)
-            token_data = _safe_json(token_result, request_url=token_url)
+            token_data, _ = await _registry_raw_get(
+                token_url, client=client, auth=auth, acceptable_statuses={200}
+            )
             if "token" not in token_data:
                 raise RuntimeError(
                     f"Failed to obtain bearer token from {token_url!r}: "
-                    f"status_code={token_result.status_code}, "
-                    f"response body: {token_result.text!r}"
+                    f"response body: {token_data!r}"
                 )
 
             token = token_data["token"]
             auth_headers = {"Authorization": f"Bearer {token}"}
 
-            auth_result = await client.get(url, headers=auth_headers)
-            return _safe_json(auth_result, request_url=url)
-        else:
-            return _safe_json(result, request_url=url)
+            body, _ = await _registry_raw_get(
+                url, client=client, headers=auth_headers, acceptable_statuses={200}
+            )
+            return body or {}
+
+        return body or {}
 
 
 async def get_tags_for_repo(
     registry_model: RegistryEndpointModel, registry_path: str
 ) -> Set[str]:
-    tags_result = await _registry_request(
-        registry_model, url_path=f"/v2/{registry_path}/tags/list"
-    )
+    tags_result: Dict[str, Any] = {}
+    try:
+        tags_result = await _registry_request(
+            registry_model, url_path=f"/v2/{registry_path}/tags/list"
+        )
+    except (
+        httpx.TransportError,
+        RegistryRequestUnexpectedStatusCodeError,
+        RegistryRequestUnparseableJsonError,
+        RuntimeError,
+    ) as exc:
+        print(f"[WARNING] {exc}")
     return set(tags_result.get("tags", []))

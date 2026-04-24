@@ -49,3 +49,25 @@ class GitlabRequestUnparseableJsonError(BaseAppException):
             f"(status_code={status_code}, content-type={content_type!r}). "
             f"Response body: {response_body!r}"
         )
+
+
+class RegistryRequestUnexpectedStatusCodeError(BaseAppException):
+    """raised if a registry request returns a non-OK status code"""
+
+    def __init__(self, requested_url: str, status_code: int, response_body: str) -> None:
+        super().__init__(
+            f"Registry request to '{requested_url}' returned unexpected "
+            f"status_code={status_code}. "
+            f"Response body: {response_body!r}"
+        )
+
+
+class RegistryRequestUnparseableJsonError(BaseAppException):
+    """raised if a registry request returns a non-JSON response"""
+
+    def __init__(self, requested_url: str, status_code: int, content_type: str, response_body: str) -> None:
+        super().__init__(
+            f"Registry request to '{requested_url}' returned non-JSON response "
+            f"(status_code={status_code}, content-type={content_type!r}). "
+            f"Response body: {response_body!r}"
+        )
