@@ -5,5 +5,6 @@ click
 envyaml
 httpx
 pydantic
+tenacity
 yarl
 yq

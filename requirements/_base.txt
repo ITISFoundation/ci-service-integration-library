@@ -39,6 +39,8 @@ pyyaml==6.0.3
     # via
     #   envyaml
     #   yq
+tenacity==9.1.4
+    # via -r requirements/_base.in
 tomlkit==0.14.0
     # via yq
 typing-extensions==4.15.0

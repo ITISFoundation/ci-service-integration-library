@@ -1,12 +1,20 @@
+import json
 from contextlib import asynccontextmanager
 from typing import Any, AsyncIterator, Dict, Optional, Set
 
-from httpx import AsyncClient, codes
+from httpx import AsyncClient, Response, codes
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 from yarl import URL
 
 from .exceptions import (
     CouldNotFindAGitlabRepositoryRepoException,
     GitlabRequestUnexpectedStatusCodeError,
+    GitlabRequestUnparseableJsonError,
 )
 from .models import RegistryEndpointModel, RepoModel
 
@@ -64,29 +72,53 @@ async def github_did_last_repo_run_pass(
         return True
 
 
-async def _gitlab_get_project_id(repo_model: RepoModel) -> str:
+@retry(
+    retry=retry_if_exception_type((GitlabRequestUnexpectedStatusCodeError, GitlabRequestUnparseableJsonError)),
+    wait=wait_exponential(multiplier=1, min=1, max=30),
+    stop=stop_after_attempt(5),
+    reraise=True,
+)
+async def _gitlab_request(
+    url: str, *, headers: Dict[str, str], expected_status: int = 200
+) -> Any:
     async with async_client() as client:
-        parsed_url = URL(repo_model.address)
-        repo_name = parsed_url.path.split("/")[-1].replace(".git", "")
-        host = parsed_url.host
-        url = f"https://{host}/api/v4/projects?search={repo_name}"
-        result = await client.get(
-            url,
-            headers={
-                "PRIVATE-TOKEN": repo_model.gitlab.personal_access_token.get_secret_value()
-            },
-        )
-        if result.status_code != 200:
-            raise GitlabRequestUnexpectedStatusCodeError(url, result.text)
+        result: Response = await client.get(url, headers=headers)
+        if result.status_code != expected_status:
+            raise GitlabRequestUnexpectedStatusCodeError(
+                url,
+                result.status_code,
+                expected_status,
+                result.text,
+            )
+        try:
+            return result.json()
+        except (json.JSONDecodeError, ValueError) as exc:
+            raise GitlabRequestUnparseableJsonError(
+                url,
+                result.status_code,
+                result.headers.get("content-type", ""),
+                result.text,
+            ) from exc
 
-        found_repos = result.json()
-        # check for http_url_to_repo
-        for repo in found_repos:
-            if repo_model.http_url_to_repo == repo["http_url_to_repo"]:
-                return repo["id"]
 
-        message = f"Searching for {repo_name} did not yield the deisired result {found_repos} {parsed_url}"
-        raise CouldNotFindAGitlabRepositoryRepoException(message)
+async def _gitlab_get_project_id(repo_model: RepoModel) -> str:
+    parsed_url = URL(repo_model.address)
+    repo_name = parsed_url.path.split("/")[-1].replace(".git", "")
+    host = parsed_url.host
+    url = f"https://{host}/api/v4/projects?search={repo_name}"
+    headers = {
+        "PRIVATE-TOKEN": repo_model.gitlab.personal_access_token.get_secret_value()
+    }
+
+    found_repos = await _gitlab_request(url, headers=headers)
+
+    # check for http_url_to_repo
+    for repo in found_repos:
+        if repo_model.http_url_to_repo == repo["http_url_to_repo"]:
+            return repo["id"]
+
+    message = f"Searching for {repo_name} did not yield the deisired result {found_repos} {parsed_url}"
+    raise CouldNotFindAGitlabRepositoryRepoException(message)
 
 
 async def gitlab_did_last_repo_run_pass(
@@ -94,28 +126,22 @@ async def gitlab_did_last_repo_run_pass(
 ) -> bool:
     project_id = await _gitlab_get_project_id(repo_model)
 
-    async with async_client() as client:
-        parsed_url = URL(repo_model.address)
-        host = parsed_url.host
-        url = f"https://{host}/api/v4/projects/{project_id}/pipelines?sha={branch_hash}"
-        result = await client.get(
-            url,
-            headers={
-                "PRIVATE-TOKEN": repo_model.gitlab.personal_access_token.get_secret_value()
-            },
-        )
-        if result.status_code != 200:
-            raise GitlabRequestUnexpectedStatusCodeError(url, result.text)
+    parsed_url = URL(repo_model.address)
+    host = parsed_url.host
+    url = f"https://{host}/api/v4/projects/{project_id}/pipelines?sha={branch_hash}"
+    headers = {
+        "PRIVATE-TOKEN": repo_model.gitlab.personal_access_token.get_secret_value()
+    }
 
-        found_pipelines = result.json()
+    found_pipelines = await _gitlab_request(url, headers=headers)
 
-        # scan for the biggest pipeline id (most recent run)
-        index_pipeline_id = [(k, x["id"]) for k, x in enumerate(found_pipelines)]
-        max_pipeline_id_index_tuple = max(index_pipeline_id, key=lambda item: item[1])
-        found_pipelines_index = max_pipeline_id_index_tuple[0]
+    # scan for the biggest pipeline id (most recent run)
+    index_pipeline_id = [(k, x["id"]) for k, x in enumerate(found_pipelines)]
+    max_pipeline_id_index_tuple = max(index_pipeline_id, key=lambda item: item[1])
+    found_pipelines_index = max_pipeline_id_index_tuple[0]
 
-        latest_run = found_pipelines[found_pipelines_index]
-        return latest_run["status"] == "success"
+    latest_run = found_pipelines[found_pipelines_index]
+    return latest_run["status"] == "success"
 
 
 def _safe_json(response, *, request_url: str) -> Dict[str, Any]:
