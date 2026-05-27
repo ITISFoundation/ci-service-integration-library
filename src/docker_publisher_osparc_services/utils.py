@@ -26,7 +26,8 @@ async def _command(command: str, live_output: bool = False, **kwargs) -> str:
 
     if proc.returncode != 0:
         print(f"STDOUT: {decoded_stdout}")
-        raise CommandFailedException("Check logs above")
+        msg = f"{command=} failed, check logs above"
+        raise CommandFailedException(msg)
 
     return decoded_stdout
 
