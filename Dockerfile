@@ -39,7 +39,7 @@ RUN --mount=from=uv_build,source=/uv,target=/bin/uv \
 FROM base AS ooil-installer
 
 ARG OSPARC_SIMCORE_REPO_URL="https://github.com/ITISFoundation/osparc-simcore"
-ARG COMMIT_SHA="018115f4321d781deabed68b1bf49400157e4cc3"
+ARG COMMIT_SHA="9596a8b672a932a421f961fb199cc58b3df17a58"
 
 
 # install ooil we need git to install from git repos
