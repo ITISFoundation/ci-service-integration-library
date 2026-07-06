@@ -4,6 +4,7 @@ from pathlib import Path
 import click
 
 from . import __version__
+from .exceptions import RegistryUnavailableError
 from .gitlab_ci_setup.commands import (
     assemble_env_vars,
     get_commands_test_base,
@@ -64,9 +65,13 @@ async def run_command(config: Path, legacy_escape: bool) -> None:
                     )
                 test_name = repo_model.registry.local_to_test[image_name]
                 release_name = repo_model.registry.test_to_release[test_name]
-                tags = await get_tags_for_repo(
-                    cfg.registries[repo_model.registry.target], release_name
-                )
+                try:
+                    tags = await get_tags_for_repo(
+                        cfg.registries[repo_model.registry.target], release_name
+                    )
+                except RegistryUnavailableError as exc:
+                    print(f"[WARNING] Skipping image {image}: {exc}")
+                    continue
                 print(
                     f"Checking tag '{tag}' for '{image}' was pushed at '{release_name}'. "
                     f"List of remote tags {[t for t in tags]}"

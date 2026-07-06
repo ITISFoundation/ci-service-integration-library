@@ -71,3 +71,21 @@ class RegistryRequestUnparseableJsonError(BaseAppException):
             f"(status_code={status_code}, content-type={content_type!r}). "
             f"Response body: {response_body!r}"
         )
+
+
+class RegistryUnavailableError(BaseAppException):
+    """raised when the registry cannot be reached/queried after retries are exhausted.
+
+    This is intentionally distinct from "registry reachable but tag/image
+    does not exist", so callers can be cautious and skip rather than
+    assume the image is missing.
+    """
+
+    def __init__(self, registry_path: str, cause: Exception) -> None:
+        self.registry_path = registry_path
+        self.cause = cause
+        super().__init__(
+            f"Could not query registry for '{registry_path}', considering it "
+            f"unavailable rather than assuming the image/tag is missing. "
+            f"Underlying error: {cause}"
+        )

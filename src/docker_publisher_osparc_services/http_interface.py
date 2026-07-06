@@ -17,6 +17,7 @@ from .exceptions import (
     GitlabRequestUnparseableJsonError,
     RegistryRequestUnexpectedStatusCodeError,
     RegistryRequestUnparseableJsonError,
+    RegistryUnavailableError,
 )
 from .models import RegistryEndpointModel, RepoModel
 
@@ -234,7 +235,6 @@ async def _registry_request(
 async def get_tags_for_repo(
     registry_model: RegistryEndpointModel, registry_path: str
 ) -> Set[str]:
-    tags_result: Dict[str, Any] = {}
     try:
         tags_result = await _registry_request(
             registry_model, url_path=f"/v2/{registry_path}/tags/list"
@@ -246,4 +246,5 @@ async def get_tags_for_repo(
         RuntimeError,
     ) as exc:
         print(f"[WARNING] {exc}")
+        raise RegistryUnavailableError(registry_path, exc) from exc
     return set(tags_result.get("tags", []))
