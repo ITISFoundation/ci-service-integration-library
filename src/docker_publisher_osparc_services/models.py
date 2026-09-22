@@ -16,6 +16,10 @@ class RegistryEndpointModel(BaseModel):
     user: str
     password: SecretStr
 
+    def secrets(self) -> List[str]:
+        """all clear-text secrets attached to this registry, for log redaction"""
+        return [self.password.get_secret_value()]
+
 
 class ImageSrcDstModel(BaseModel):
     local_name: str
@@ -73,7 +77,7 @@ class GitLabModel(BaseModel):
 
 
 class GitHubModel(BaseModel):
-    github_token: str
+    github_token: SecretStr
 
 
 class RepoModel(BaseModel):
@@ -107,11 +111,13 @@ class RepoModel(BaseModel):
     def require_access_token(cls, values):
         if values["host_type"] == HostType.GITLAB and values.get("gitlab", None) is None:
             raise ValueError(
-                f"Provide a valid 'gitlab' field for {HostType.GITLAB} repo"
+                f"Provide a valid 'gitlab' field for {HostType.GITLAB} repo "
+                f"(address={values.get('address')!r})"
             )
         if values["host_type"] == HostType.GITHUB and values.get("github", None) is None:
             raise ValueError(
-                f"Provide a valid 'gitlab' field for {HostType.GITHUB} repo"
+                f"Provide a valid 'github' field for {HostType.GITHUB} repo "
+                f"(address={values.get('address')!r})"
             )
 
         return values
@@ -143,6 +149,19 @@ class RepoModel(BaseModel):
     def repo(self) -> str:
         return self._format_repo(escape_credentials=False)
 
+    def secrets(self) -> List[str]:
+        """all clear-text secrets attached to this repo, for log redaction.
+        Includes the URL-escaped variants (@ -> %40) as used in escaped_repo"""
+        found: List[str] = []
+        if self.gitlab is not None:
+            found.append(self.gitlab.personal_access_token.get_secret_value())
+            deploy_password = self.gitlab.deploy_token_password.get_secret_value()
+            found.append(deploy_password)
+            found.append(deploy_password.replace("@", "%40"))
+        if self.github is not None:
+            found.append(self.github.github_token.get_secret_value())
+        return found
+
     @property
     def escaped_repo(self) -> str:
         return self._format_repo(escape_credentials=True)
@@ -164,7 +183,9 @@ class ConfigModel(BaseModel):
         for repo in repositories:
             if repo["registry"]["target"] not in registries:
                 raise ValueError(
-                    f"Repo {repo}:\n- registry.target={repo.registry.target} not found in registries={registries}"
+                    f"Repo address={repo.get('address')!r} branch={repo.get('branch')!r}:\n"
+                    f"- registry.target={repo['registry']['target']} not found in "
+                    f"registries={list(registries)}"
                 )
         return values
 

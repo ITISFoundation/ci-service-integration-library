@@ -88,5 +88,6 @@ def validate_commands_list(
             if hit.startswith("SCCI") and hit not in env_vars:
                 raise ValueError(
                     f"env var '{hit}'\ndefined in '{command}'\n "
-                    f"not found default injected env vars '{env_vars}'"
+                    f"not found in default injected env var names "
+                    f"'{list(env_vars)}'"
                 )

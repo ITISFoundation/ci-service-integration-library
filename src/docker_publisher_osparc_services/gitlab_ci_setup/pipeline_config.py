@@ -1,4 +1,5 @@
 import json
+import re
 from asyncio import Lock
 from collections import deque
 from io import TextIOWrapper
@@ -12,6 +13,22 @@ from .constants import GENERATED_PIPELINE_PATH, PIPELINE_CONFIGS
 from .pipeline_writer import PipelineWriter
 
 HEADER = "=" * 50
+
+# env var name fragments considered secret when echoing a generated pipeline
+_SECRET_ENV_FRAGMENTS = ("PASSWORD", "TOKEN", "SECRET")
+
+
+def _mask_pipeline_text(text: str) -> str:
+    """mask the values of secret-looking pipeline variables (e.g. registry
+    passwords) so they are never echoed to stdout"""
+    masked = text
+    for fragment in _SECRET_ENV_FRAGMENTS:
+        masked = re.sub(
+            rf"((?:^|\n)\s*\w*{fragment}\w*:\s*)(\S.*)",
+            lambda m: f"{m.group(1)}**********",
+            masked,
+        )
+    return masked
 
 
 class PipelineConfig(BaseModel):
@@ -74,7 +91,7 @@ class PipelineGenerator:
         print(HEADER)
         print("GENERATED PIPELINE")
         print(HEADER)
-        print(GENERATED_PIPELINE_PATH.read_text())
+        print(_mask_pipeline_text(GENERATED_PIPELINE_PATH.read_text()))
         print(HEADER)
 
     async def add_pipeline_from(
