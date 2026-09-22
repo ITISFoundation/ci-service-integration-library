@@ -15,6 +15,7 @@ from .exceptions import (
     CouldNotFindAGitlabRepositoryRepoException,
     GitlabRequestUnexpectedStatusCodeError,
     GitlabRequestUnparseableJsonError,
+    RegistryRepoNotFoundError,
     RegistryRequestUnexpectedStatusCodeError,
     RegistryRequestUnparseableJsonError,
     RegistryUnavailableError,
@@ -149,6 +150,26 @@ async def gitlab_did_last_repo_run_pass(
 
 
 
+# registry v2 error codes that unambiguously mean "this repository/manifest
+# does not exist" as answered directly by the registry (not a gateway/proxy)
+_REPO_MISSING_ERROR_CODES = {"NAME_UNKNOWN", "MANIFEST_UNKNOWN", "NOT_FOUND"}
+
+
+def _is_registry_repo_missing_payload(body: Any) -> bool:
+    """True only for a well-formed Docker Registry v2 error envelope reporting
+    a missing repository/manifest. Flaky networks, timeouts, and proxy/gateway
+    error pages never produce this structured payload."""
+    if not isinstance(body, dict):
+        return False
+    errors = body.get("errors")
+    if not isinstance(errors, list) or not errors:
+        return False
+    return any(
+        isinstance(err, dict) and err.get("code") in _REPO_MISSING_ERROR_CODES
+        for err in errors
+    )
+
+
 @retry(
     retry=retry_if_exception_type((
         httpx.TransportError,
@@ -168,6 +189,16 @@ async def _registry_raw_get(
     acceptable_statuses: Set[int]
 ) -> Tuple[Optional[Any], Mapping[str, str]]:
     result: Response = await client.get(url, auth=auth, headers=headers)
+    if result.status_code == codes.NOT_FOUND:
+        # a 404 carrying the registry's own error envelope is a definitive
+        # "repository does not exist (yet)" verdict, e.g. before an image's
+        # first push -> raise a non-retried, explicitly-handled error instead
+        try:
+            error_payload = result.json()
+        except ValueError:
+            error_payload = None
+        if _is_registry_repo_missing_payload(error_payload):
+            raise RegistryRepoNotFoundError(url, result.text)
     if result.status_code not in acceptable_statuses:
         raise RegistryRequestUnexpectedStatusCodeError(
             url,
@@ -239,6 +270,16 @@ async def get_tags_for_repo(
         tags_result = await _registry_request(
             registry_model, url_path=f"/v2/{registry_path}/tags/list"
         )
+    except RegistryRepoNotFoundError:
+        # the registry itself confirms the repository does not exist yet
+        # (typical for an image's very first push): that is a valid answer
+        # meaning "no tags", so the caller can proceed to build & push,
+        # which will create the repository on the registry
+        print(
+            f"[INFO] Repository '{registry_path}' does not exist on the "
+            "registry yet, treating it as having no tags."
+        )
+        return set()
     except (
         httpx.TransportError,
         RegistryRequestUnexpectedStatusCodeError,

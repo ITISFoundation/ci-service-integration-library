@@ -73,6 +73,22 @@ class RegistryRequestUnparseableJsonError(BaseAppException):
         )
 
 
+class RegistryRepoNotFoundError(BaseAppException):
+    """raised when the registry itself reports (via its v2 error envelope) that
+    the repository does not exist yet, e.g. before an image's very first push.
+
+    This is a *definitive* answer from the registry (as opposed to a transport/
+    gateway failure), so it is intentionally not retried and is interpreted by
+    callers as "no tags available".
+    """
+
+    def __init__(self, requested_url: str, response_body: str) -> None:
+        super().__init__(
+            f"Registry repository not found for '{requested_url}'. "
+            f"Response body: {response_body!r}"
+        )
+
+
 class RegistryUnavailableError(BaseAppException):
     """raised when the registry cannot be reached/queried after retries are exhausted.
 
