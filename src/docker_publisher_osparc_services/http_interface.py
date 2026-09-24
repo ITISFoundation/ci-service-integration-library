@@ -13,6 +13,8 @@ from yarl import URL
 
 from .exceptions import (
     CouldNotFindAGitlabRepositoryRepoException,
+    GithubRequestUnexpectedStatusCodeError,
+    GithubRequestUnparseableJsonError,
     GitlabRequestUnexpectedStatusCodeError,
     GitlabRequestUnparseableJsonError,
     RegistryRepoNotFoundError,
@@ -37,45 +39,81 @@ class GreenCIMissingError(Exception):
         )
 
 
+@retry(
+    retry=retry_if_exception_type(
+        (
+            httpx.TransportError,
+            GithubRequestUnexpectedStatusCodeError,
+            GithubRequestUnparseableJsonError,
+        )
+    ),
+    wait=wait_exponential(multiplier=1, min=1, max=30),
+    stop=stop_after_attempt(5),
+    reraise=True,
+)
+async def _github_request(
+    url: str, *, headers: Dict[str, str], params=None, expected_status: int = 200
+) -> Tuple[Any, "Response"]:
+    async with async_client() as client:
+        result: Response = await client.get(url, params=params, headers=headers)
+        if result.status_code != expected_status:
+            raise GithubRequestUnexpectedStatusCodeError(
+                url,
+                result.status_code,
+                expected_status,
+                result.text,
+            )
+        try:
+            return result.json(), result
+        except ValueError as exc:
+            raise GithubRequestUnparseableJsonError(
+                url,
+                result.status_code,
+                result.headers.get("content-type", ""),
+                result.text,
+            ) from exc
+
+
 async def github_did_last_repo_run_pass(
     repo_model: RepoModel, branch_hash: str
 ) -> bool:
-    async with async_client() as client:
-        repo_path = repo_model.repo.split("github.com/")[1].replace(".git", "")
-        url = f"https://api.github.com/repos/{repo_path}/actions/runs"
-        headers = {
-            "Authorization": f"Bearer {repo_model.github.github_token.get_secret_value()}"
-        }
-        params = {"per_page": "10", "branch": repo_model.branch}
-        associated_run: Optional[Dict[str, Any]] = None
+    repo_path = repo_model.http_url_to_repo.split("github.com/")[1].replace(".git", "")
+    url: Optional[str] = f"https://api.github.com/repos/{repo_path}/actions/runs"
+    headers = {
+        "Authorization": f"Bearer {repo_model.github.github_token.get_secret_value()}"
+    }
+    params = {"per_page": "10", "branch": repo_model.branch}
+    associated_run: Optional[Dict[str, Any]] = None
 
-        while url:
-            result = await client.get(url, params=params, headers=headers)
-            runs = result.json()
+    while url:
+        # each page request is status-checked and retried on transient failures
+        runs, result = await _github_request(url, headers=headers, params=params)
+        # the first page used params; next links already contain them
+        params = None
 
-            for run in runs.get("workflow_runs", []):
-                if (
-                    run["head_commit"]["id"] == branch_hash
-                    and run["head_branch"] == repo_model.branch
-                    and run["status"] == "completed"
-                    and run["conclusion"] == "success"
-                ):
-                    associated_run = run
-                    break
-
-            if associated_run is not None:  # Branch hash found, exit the loop
+        for run in runs.get("workflow_runs", []):
+            if (
+                run["head_commit"]["id"] == branch_hash
+                and run["head_branch"] == repo_model.branch
+                and run["status"] == "completed"
+                and run["conclusion"] == "success"
+            ):
+                associated_run = run
                 break
 
-            url = result.links.get("next", {}).get("url")
+        if associated_run is not None:  # Branch hash found, exit the loop
+            break
 
-        if associated_run is None:
-            raise GreenCIMissingError(
-                repo_url=repo_model.http_url_to_repo,
-                target_brach=repo_model.branch,
-                branch_hash=branch_hash,
-            )
+        url = result.links.get("next", {}).get("url")
 
-        return True
+    if associated_run is None:
+        raise GreenCIMissingError(
+            repo_url=repo_model.http_url_to_repo,
+            target_brach=repo_model.branch,
+            branch_hash=branch_hash,
+        )
+
+    return True
 
 
 @retry(

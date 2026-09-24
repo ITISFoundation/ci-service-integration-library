@@ -29,6 +29,28 @@ class CommandFailedException(BaseAppException):
     """raised if a command fails"""
 
 
+class GithubRequestUnexpectedStatusCodeError(BaseAppException):
+    """raised if a github API request fails"""
+
+    def __init__(self, requested_url: str, status_code: int, expected_status: int, response_body: str) -> None:
+        super().__init__(
+            f"GitHub API request '{requested_url}' returned unexpected "
+            f"status_code={status_code}, expected {expected_status}. "
+            f"Response body: {response_body!r}"
+        )
+
+
+class GithubRequestUnparseableJsonError(BaseAppException):
+    """raised if a github API request returns a non-JSON response"""
+
+    def __init__(self, requested_url: str, status_code: int, content_type: str, response_body: str) -> None:
+        super().__init__(
+            f"GitHub API request '{requested_url}' returned non-JSON response "
+            f"(status_code={status_code}, content-type={content_type!r}). "
+            f"Response body: {response_body!r}"
+        )
+
+
 class GitlabRequestUnexpectedStatusCodeError(BaseAppException):
     """raised if a gitlab request fails"""
 
