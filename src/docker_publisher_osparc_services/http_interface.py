@@ -74,16 +74,19 @@ async def _github_request(
             ) from exc
 
 
-async def github_did_last_repo_run_pass(
-    repo_model: RepoModel, branch_hash: str
-) -> bool:
-    repo_path = repo_model.http_url_to_repo.split("github.com/")[1].replace(".git", "")
+class GreenRunNotVisibleYetError(Exception):
+    """raised when a full page-scan found no green run; the whole scan is
+    retried a few times because GitHub's branch-filtered runs endpoint can
+    transiently serve stale/incomplete (but valid, HTTP 200) results"""
+
+
+async def _github_scan_pages_for_green_run(
+    repo_path: str, headers: Dict[str, str], branch: str, branch_hash: str
+) -> Optional[Dict[str, Any]]:
+    """scan ALL pages of the workflow-runs list looking for a completed
+    successful run on branch_hash; returns the run or None"""
     url: Optional[str] = f"https://api.github.com/repos/{repo_path}/actions/runs"
-    headers = {
-        "Authorization": f"Bearer {repo_model.github.github_token.get_secret_value()}"
-    }
-    params = {"per_page": "10", "branch": repo_model.branch}
-    associated_run: Optional[Dict[str, Any]] = None
+    params = {"per_page": "100", "branch": branch}
 
     while url:
         # each page request is status-checked and retried on transient failures
@@ -94,24 +97,53 @@ async def github_did_last_repo_run_pass(
         for run in runs.get("workflow_runs", []):
             if (
                 run["head_commit"]["id"] == branch_hash
-                and run["head_branch"] == repo_model.branch
+                and run["head_branch"] == branch
                 and run["status"] == "completed"
                 and run["conclusion"] == "success"
             ):
-                associated_run = run
-                break
+                return run
 
-        if associated_run is not None:  # Branch hash found, exit the loop
-            break
-
+        # not on this page: follow GitHub's 'next' link to keep scanning
         url = result.links.get("next", {}).get("url")
 
+    return None
+
+
+@retry(
+    retry=retry_if_exception_type(GreenRunNotVisibleYetError),
+    wait=wait_exponential(multiplier=1, min=5, max=30),
+    stop=stop_after_attempt(3),
+    reraise=True,
+)
+async def _github_find_green_run(
+    repo_path: str, headers: Dict[str, str], branch: str, branch_hash: str
+) -> Dict[str, Any]:
+    associated_run = await _github_scan_pages_for_green_run(
+        repo_path, headers, branch, branch_hash
+    )
     if associated_run is None:
+        raise GreenRunNotVisibleYetError(branch_hash)
+    return associated_run
+
+
+async def github_did_last_repo_run_pass(
+    repo_model: RepoModel, branch_hash: str
+) -> bool:
+    repo_path = repo_model.http_url_to_repo.split("github.com/")[1].replace(".git", "")
+    headers = {
+        "Authorization": f"Bearer {repo_model.github.github_token.get_secret_value()}"
+    }
+
+    try:
+        await _github_find_green_run(
+            repo_path, headers, repo_model.branch, branch_hash
+        )
+    except GreenRunNotVisibleYetError as err:
         raise GreenCIMissingError(
             repo_url=repo_model.http_url_to_repo,
             target_brach=repo_model.branch,
             branch_hash=branch_hash,
-        )
+        ) from err
 
     return True
 
