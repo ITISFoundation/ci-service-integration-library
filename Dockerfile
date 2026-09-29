@@ -68,6 +68,10 @@ ARG DEBIAN_DOCKER_VERSION
 # Copy ooil virtual environment from installer stage
 COPY --from=ooil-installer  ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
+# Shared computational-service entrypoint asset for consuming service images
+# (see assets/README.md); consumers COPY it out of this image.
+COPY assets/ /opt/service-integration/assets/
+
 # ooil special ENV for $$$$ variable substitution in osparc services
 ENV ENABLE_OOIL_OSPARC_VARIABLE_IDENTIFIER=1
 
